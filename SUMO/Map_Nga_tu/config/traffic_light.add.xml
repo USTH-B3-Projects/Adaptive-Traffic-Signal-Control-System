@@ -1,0 +1,20 @@
+<additional>
+  <tlLogic id="J" type="static" programID="test" offset="0">
+    <phase duration="3" state="GGGrrrrrGGGrrrrr" name="NS through/right start" />
+    <phase duration="27" state="GGGrsrrrGGGrsrrr" name="NS through/right" />
+    <phase duration="3" state="yyyrrrrryyyrrrrr" name="NS through/right yellow" />
+    <phase duration="3" state="rrrrrrrrrrrrrrrr" name="NS through/right clearance" />
+    <phase duration="3" state="rrrGrrrrrrrGrrrr" name="NS protected left start" />
+    <phase duration="12" state="srrGsrrrsrrGsrrr" name="NS protected left" />
+    <phase duration="3" state="rrryrrrrrrryrrrr" name="NS protected left yellow" />
+    <phase duration="3" state="rrrrrrrrrrrrrrrr" name="NS protected left clearance" />
+    <phase duration="3" state="rrrrGGGrrrrrGGGr" name="EW through/right start" />
+    <phase duration="27" state="srrrGGGrsrrrGGGr" name="EW through/right" />
+    <phase duration="3" state="rrrryyyrrrrryyyr" name="EW through/right yellow" />
+    <phase duration="3" state="rrrrrrrrrrrrrrrr" name="EW through/right clearance" />
+    <phase duration="3" state="rrrrrrrGrrrrrrrG" name="EW protected left start" />
+    <phase duration="12" state="srrrsrrGsrrrsrrG" name="EW protected left" />
+    <phase duration="3" state="rrrrrrryrrrrrrry" name="EW protected left yellow" />
+    <phase duration="3" state="rrrrrrrrrrrrrrrr" name="EW protected left clearance" />
+  </tlLogic>
+</additional>

@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+  <vType id="motorcycle" vClass="motorcycle" length="2" width="0.8" maxSpeed="13.9" accel="2.6" decel="4.5" minGap="0.5" tau="0.6" lcSpeedGain="2" lcKeepRight="0" emergencyDecel="7" sigma="0.5" speedFactor="1" speedDev="0" carFollowModel="Krauss" laneChangeModel="SL2015" lcStrategic="1" lcCooperative="0.5" lcAssertive="1" guiShape="motorcycle" color="240,190,35" latAlignment="arbitrary" minGapLat="0.6" maxSpeedLat="0.6" lcSublane="1" jmStopSignWait="1" impatience="off" jmStoplineGapMinor="1" />
+  <vType id="car" vClass="passenger" length="4.5" width="1.8" maxSpeed="13.9" accel="2" decel="4.5" minGap="2.5" tau="1.2" lcSpeedGain="0" lcKeepRight="1" emergencyDecel="7" sigma="0.5" speedFactor="1" speedDev="0" carFollowModel="Krauss" laneChangeModel="SL2015" lcStrategic="1" lcCooperative="1" lcAssertive="1" guiShape="passenger" color="45,125,215" latAlignment="center" minGapLat="0.6" jmStopSignWait="1" impatience="off" jmStoplineGapMinor="1" />
+  <vType id="bus" vClass="bus" length="12" width="2.5" maxSpeed="11.1" accel="1.2" decel="3.5" minGap="3" tau="1.5" lcSpeedGain="0" lcKeepRight="1" emergencyDecel="7" sigma="0.5" speedFactor="1" speedDev="0" carFollowModel="Krauss" laneChangeModel="SL2015" lcStrategic="1" lcCooperative="1" lcAssertive="1" guiShape="bus" color="225,90,55" latAlignment="center" minGapLat="0.6" jmStopSignWait="1" impatience="off" jmStoplineGapMinor="1" />
+  <route id="N_r" edges="N_in W_out" />
+  <route id="N_s" edges="N_in S_out" />
+  <route id="N_l" edges="N_in E_out" />
+  <route id="E_r" edges="E_in N_out" />
+  <route id="E_s" edges="E_in W_out" />
+  <route id="E_l" edges="E_in S_out" />
+  <route id="S_r" edges="S_in E_out" />
+  <route id="S_s" edges="S_in N_out" />
+  <route id="S_l" edges="S_in W_out" />
+  <route id="W_r" edges="W_in S_out" />
+  <route id="W_s" edges="W_in E_out" />
+  <route id="W_l" edges="W_in N_out" />
+  <vehicle id="N_bus_s" type="bus" route="N_s" depart="0" departLane="0" departSpeed="0" />
+  <vehicle id="E_bus_s" type="bus" route="E_s" depart="0" departLane="0" departSpeed="0" />
+  <vehicle id="S_bus_s" type="bus" route="S_s" depart="0" departLane="0" departSpeed="0" />
+  <vehicle id="W_bus_s" type="bus" route="W_s" depart="0" departLane="0" departSpeed="0" />
+  <vehicle id="N_motorcycle_filter" type="motorcycle" route="N_s" depart="3" departLane="0" departSpeed="0" />
+  <vehicle id="E_motorcycle_filter" type="motorcycle" route="E_s" depart="3" departLane="0" departSpeed="0" />
+  <vehicle id="S_motorcycle_filter" type="motorcycle" route="S_s" depart="3" departLane="0" departSpeed="0" />
+  <vehicle id="W_motorcycle_filter" type="motorcycle" route="W_s" depart="3" departLane="0" departSpeed="0" />
+  <vehicle id="N_motorcycle_s" type="motorcycle" route="N_s" depart="6" departLane="1" departSpeed="0" />
+  <vehicle id="E_motorcycle_s" type="motorcycle" route="E_s" depart="6" departLane="1" departSpeed="0" />
+  <vehicle id="S_motorcycle_s" type="motorcycle" route="S_s" depart="6" departLane="1" departSpeed="0" />
+  <vehicle id="W_motorcycle_s" type="motorcycle" route="W_s" depart="6" departLane="1" departSpeed="0" />
+  <vehicle id="N_car_s" type="car" route="N_s" depart="9" departLane="0" departSpeed="0" />
+  <vehicle id="E_car_s" type="car" route="E_s" depart="9" departLane="0" departSpeed="0" />
+  <vehicle id="S_car_s" type="car" route="S_s" depart="9" departLane="0" departSpeed="0" />
+  <vehicle id="W_car_s" type="car" route="W_s" depart="9" departLane="0" departSpeed="0" />
+  <vehicle id="N_bus_l" type="bus" route="N_l" depart="12" departLane="1" departSpeed="0" />
+  <vehicle id="E_bus_l" type="bus" route="E_l" depart="12" departLane="1" departSpeed="0" />
+  <vehicle id="S_bus_l" type="bus" route="S_l" depart="12" departLane="1" departSpeed="0" />
+  <vehicle id="W_bus_l" type="bus" route="W_l" depart="12" departLane="1" departSpeed="0" />
+  <vehicle id="N_motorcycle_l" type="motorcycle" route="N_l" depart="15" departLane="1" departSpeed="0" />
+  <vehicle id="E_motorcycle_l" type="motorcycle" route="E_l" depart="15" departLane="1" departSpeed="0" />
+  <vehicle id="S_motorcycle_l" type="motorcycle" route="S_l" depart="15" departLane="1" departSpeed="0" />
+  <vehicle id="W_motorcycle_l" type="motorcycle" route="W_l" depart="15" departLane="1" departSpeed="0" />
+  <vehicle id="N_car_l" type="car" route="N_l" depart="18" departLane="1" departSpeed="0" />
+  <vehicle id="E_car_l" type="car" route="E_l" depart="18" departLane="1" departSpeed="0" />
+  <vehicle id="S_car_l" type="car" route="S_l" depart="18" departLane="1" departSpeed="0" />
+  <vehicle id="W_car_l" type="car" route="W_l" depart="18" departLane="1" departSpeed="0" />
+  <vehicle id="N_bus_r" type="bus" route="N_r" depart="21" departLane="0" departSpeed="0" />
+  <vehicle id="E_bus_r" type="bus" route="E_r" depart="21" departLane="0" departSpeed="0" />
+  <vehicle id="S_bus_r" type="bus" route="S_r" depart="21" departLane="0" departSpeed="0" />
+  <vehicle id="W_bus_r" type="bus" route="W_r" depart="21" departLane="0" departSpeed="0" />
+  <vehicle id="N_motorcycle_r" type="motorcycle" route="N_r" depart="24" departLane="0" departSpeed="0" />
+  <vehicle id="E_motorcycle_r" type="motorcycle" route="E_r" depart="24" departLane="0" departSpeed="0" />
+  <vehicle id="S_motorcycle_r" type="motorcycle" route="S_r" depart="24" departLane="0" departSpeed="0" />
+  <vehicle id="W_motorcycle_r" type="motorcycle" route="W_r" depart="24" departLane="0" departSpeed="0" />
+  <vehicle id="N_car_r" type="car" route="N_r" depart="27" departLane="0" departSpeed="0" />
+  <vehicle id="E_car_r" type="car" route="E_r" depart="27" departLane="0" departSpeed="0" />
+  <vehicle id="S_car_r" type="car" route="S_r" depart="27" departLane="0" departSpeed="0" />
+  <vehicle id="W_car_r" type="car" route="W_r" depart="27" departLane="0" departSpeed="0" />
+</routes>

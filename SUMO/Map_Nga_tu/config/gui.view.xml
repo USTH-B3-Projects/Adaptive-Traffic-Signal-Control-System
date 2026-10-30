@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<viewsettings>
+  <scheme name="test-intersection">
+    <background backgroundColor="234,232,223" showGrid="0" />
+    <edges laneEdgeMode="0" laneShowBorders="1" showLinkDecals="1" showLinkRules="1" hideConnectors="0" />
+    <vehicles vehicleMode="0" vehicleQuality="2" vehicle_exaggeration="1" vehicle_minSize="1" showBlinker="1" />
+    <junctions junctionMode="0" drawShape="1" drawCrossingsAndWalkingareas="1" />
+  </scheme>
+  <viewport x="260.5" y="260.5" zoom="110" />
+</viewsettings>

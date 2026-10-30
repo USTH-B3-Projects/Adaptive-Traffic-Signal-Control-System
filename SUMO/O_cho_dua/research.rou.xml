@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <!-- Experimental assumptions: medium/balanced, 1200 veh/h, 80% motorcycles. -->
+    <vType id="motorcycle" vClass="motorcycle" guiShape="motorcycle" length="2.0" width="0.8" minGap="0.8" maxSpeed="13.9" accel="3.0" decel="4.5" tau="1.0" sigma="0.5" carFollowModel="Krauss" laneChangeModel="SL2015" lcStrategic="2.0" lcCooperative="1.0" lcSpeedGain="1.0" lcKeepRight="0.5" lcSublane="1.0" latAlignment="arbitrary" minGapLat="0.6" maxSpeedLat="0.6" color="240,190,35" />
+    <vType id="passenger_car" vClass="passenger" guiShape="passenger" length="4.5" width="1.8" minGap="2.5" maxSpeed="13.9" accel="2.0" decel="4.5" tau="1.2" sigma="0.5" carFollowModel="Krauss" laneChangeModel="SL2015" latAlignment="center" minGapLat="0.6" lcSpeedGain="0" lcKeepRight="1" color="45,125,215" />
+    <vType id="bus" vClass="bus" guiShape="bus" length="12" width="2.5" minGap="3" tau="1.5" maxSpeed="11.1" accel="1.2" decel="3.5" sigma="0.5" carFollowModel="Krauss" laneChangeModel="SL2015" lcSpeedGain="0" lcKeepRight="1" latAlignment="center" minGapLat="0.6" color="225,90,55" />
+    <vTypeDistribution id="traffic_mix" vTypes="motorcycle passenger_car" probabilities="0.8 0.2" />
+    <vTypeDistribution id="traffic_mix_straight" vTypes="motorcycle passenger_car bus" probabilities="0.8 0.12 0.08" />
+    <flow id="ton_duc_thang_right" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="599146734" to="711101759#3" via="954341842#0 964674137#1" departLane="best" departSpeed="max" />
+    <flow id="ton_duc_thang_straight" type="traffic_mix_straight" begin="0" end="3600" vehsPerHour="150.000" from="599146734" to="1204846893#1" via="954341842#0 882269315#1" departLane="best" departSpeed="max" />
+    <flow id="ton_duc_thang_left" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="599146734" to="36869877#7" via="954341842#0 964868047#1" departLane="best" departSpeed="max" />
+    <flow id="xa_dan_right" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="402400378#0" to="1242184419" via="1392245988#0 687098302#1" departLane="best" departSpeed="max" />
+    <flow id="xa_dan_straight" type="traffic_mix_straight" begin="0" end="3600" vehsPerHour="150.000" from="402400378#0" to="711101759#3" via="1392245988#0 964674137#1" departLane="best" departSpeed="max" />
+    <flow id="xa_dan_left" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="402400378#0" to="1204846893#1" via="1392245988#0 882269315#1" departLane="best" departSpeed="max" />
+    <flow id="nguyen_luong_bang_right" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="1204846892#0" to="36869877#7" via="1262818190#0 964868047#1" departLane="best" departSpeed="max" />
+    <flow id="nguyen_luong_bang_straight" type="traffic_mix" begin="0" end="3600" vehsPerHour="150.000" from="1204846892#0" to="1242184419" via="1262818190#0 687098302#1" departLane="best" departSpeed="max" />
+    <flow id="nguyen_luong_bang_left" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="1204846892#0" to="711101759#3" via="1262818190#0 964674137#1" departLane="best" departSpeed="max" />
+    <flow id="o_cho_dua_right" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="506383095#0" to="1204846893#1" via="711109718#1 882269315#1" departLane="best" departSpeed="max" />
+    <flow id="o_cho_dua_straight" type="traffic_mix_straight" begin="0" end="3600" vehsPerHour="150.000" from="506383095#0" to="36869877#7" via="711109718#1 964868047#1" departLane="best" departSpeed="max" />
+    <flow id="o_cho_dua_left" type="traffic_mix" begin="0" end="3600" vehsPerHour="75.000" from="506383095#0" to="1242184419" via="711109718#1 687098302#1" departLane="best" departSpeed="max" />
+</routes>
