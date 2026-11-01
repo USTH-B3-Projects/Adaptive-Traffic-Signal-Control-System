@@ -6,7 +6,7 @@ import copy
 
 parser = argparse.ArgumentParser(description='Regenerate the isolated test inputs (not the compiled network).')
 parser.add_argument('--duration', type=float, default=3600, help='Flow end time in seconds')
-parser.add_argument('--rate', type=float, default=180, help='Vehicles/hour per approach')
+parser.add_argument('--rate', type=float, default=360, help='Vehicles/hour per approach')
 args = parser.parse_args()
 if not math.isfinite(args.duration) or not math.isfinite(args.rate) or args.duration <= 0 or args.rate <= 0:
     parser.error('duration and rate must be finite positive numbers')
@@ -41,23 +41,20 @@ for i,arm in enumerate('NESW'):
 save('network/intersection.con.xml',c)
 a = E.Element('additional')
 t = E.SubElement(a,'tlLogic',id='J',type='static',programID='test',offset='0')
-for name,duration,green in [('NS through/right',30,{0,1,2,8,9,10}),
-                            ('NS protected left',15,{3,11}),
-                            ('EW through/right',30,{4,5,6,12,13,14}),
-                            ('EW protected left',15,{7,15})]:
-    for suffix,seconds,light in [('',duration,'G'),(' yellow',3,'y'),(' clearance',3,'r')]:
-        state = ''.join(light if i in green else ('s' if light == 'G' and i in {0,4,8,12} else 'r') for i in range(16))
-        if light == 'G':
-            # Let the priority queue start before admitting stop-and-yield turns.
-            E.SubElement(t,'phase',duration='3',state=state.replace('s','r'),name=name+' start')
-            seconds -= 3
+for name,green,left in [('NS shared green',{0,1,2,3,8,9,10,11},{3,11}),
+                        ('EW shared green',{4,5,6,7,12,13,14,15},{7,15})]:
+    for suffix,seconds,light in [(' start',3,'G'),('',48,'G'),(' yellow',3,'y'),(' clearance',3,'r')]:
+        state = ''.join(('g' if i in left else 'G') if light == 'G' and i in green
+                        else light if i in green
+                        else ('s' if light == 'G' and not suffix and i in {0,4,8,12} else 'r')
+                        for i in range(16))
         E.SubElement(t,'phase',duration=str(seconds),state=state,name=name+suffix)
 save('config/traffic_light.add.xml',a)
 r = E.Element('routes')
 for name,cls,length,width,speed,accel,decel,gap,tau,gain,keep in [
- ('motorcycle','motorcycle',2,.8,13.9,2.6,4.5,.5,.6,2,0),
- ('car','passenger',4.5,1.8,13.9,2,4.5,2.5,1.2,0,1),
- ('bus','bus',12,2.5,11.1,1.2,3.5,3,1.5,0,1)]:
+ ('motorcycle','motorcycle',2,.8,13.9,2.6,4.5,.5,.6,2,1),
+ ('car','passenger',4.5,1.8,13.9,2,4.5,2.5,1.2,1,0),
+ ('bus','bus',12,2.5,11.1,1.2,3.5,3,1.5,1,0)]:
     attrs = dict(id=name,vClass=cls,length=length,width=width,maxSpeed=speed,accel=accel,decel=decel,minGap=gap,tau=tau,lcSpeedGain=gain,lcKeepRight=keep,emergencyDecel=7,sigma=.5,speedFactor=1,speedDev=0,carFollowModel='Krauss',laneChangeModel='SL2015',lcStrategic=1,lcCooperative=1,lcAssertive=1,latAlignment='center',minGapLat=.6,jmStopSignWait=1)
     if name == 'motorcycle':
         attrs.update(lcCooperative=.5,latAlignment='arbitrary',maxSpeedLat=.6,lcSublane=1)
@@ -65,6 +62,21 @@ for name,cls,length,width,speed,accel,decel,gap,tau,gain,keep in [
     attrs.update(jmStoplineGapMinor=1,impatience='off')
     attrs.update(guiShape={'motorcycle':'motorcycle', 'car':'passenger', 'bus':'bus'}[name], color={'motorcycle':'240,190,35', 'car':'45,125,215', 'bus':'225,90,55'}[name])
     E.SubElement(r,'vType',{k:str(v) for k,v in attrs.items()})
+# Moderate impatience accepts gaps that may require the priority stream to slow.
+for base in list(r.findall('vType')):
+    left = copy.deepcopy(base)
+    left.set('id', base.get('id') + '_left')
+    left.set('impatience', '0.3')
+    r.append(left)
+
+# Wait for a crossing vehicle to clear before advancing into its conflict point.
+for base in [v for v in r.findall('vType') if not v.get('id').endswith('_left')]:
+    straight = copy.deepcopy(base)
+    straight.set('id', base.get('id') + '_straight')
+    straight.set('jmAdvance', '0')
+    straight.set('jmExtraGap', '1')
+    r.append(straight)
+
 type_weights = {'motorcycle':.8, 'car':.17, 'bus':.03}
 turn_weights = {'s':.6, 'l':.2, 'r':.2}
 for arm in 'NESW':
@@ -81,8 +93,8 @@ for i,arm in enumerate('NSEW'):
             begin = i * 900 / args.rate if kind == 'motorcycle' and direction == 's' else period * (i + .5) / 4
             if begin >= args.duration:
                 continue
-            lane = 1 if direction == 'l' or (direction == 's' and kind == 'motorcycle') else 0
-            flows.append(E.Element('flow',id=f'{arm}_{kind}_{direction}',type=kind,route=arm+'_'+direction,
+            lane = 1 if direction == 'l' or (direction == 's' and kind != 'motorcycle') else 0
+            flows.append(E.Element('flow',id=f'{arm}_{kind}_{direction}',type=(kind+'_left' if direction == 'l' else kind+'_straight' if direction == 's' else kind),route=arm+'_'+direction,
                                    begin=f'{begin:.12g}',end=str(args.duration),vehsPerHour=f'{rate:.12g}',
                                    departLane=str(lane),departSpeed='0'))
 r.extend(sorted(flows,key=lambda flow:float(flow.get('begin'))))
@@ -95,7 +107,7 @@ cases = [('bus','s',0),('motorcycle','s',0),('motorcycle','s',1),('car','s',0),
 for group,(kind,direction,lane) in enumerate(cases):
     for arm in 'NESW':
         suffix = 'filter' if group == 1 else direction
-        E.SubElement(m,'vehicle',id=f'{arm}_{kind}_{suffix}',type=kind,route=arm+'_'+direction,
+        E.SubElement(m,'vehicle',id=f'{arm}_{kind}_{suffix}',type=(kind+'_left' if direction == 'l' else kind+'_straight' if direction == 's' else kind),route=arm+'_'+direction,
                      depart=str(group*3),departLane=str(lane),departSpeed='0')
 save('routes/movement_test.rou.xml',m)
 c = E.Element('configuration')
@@ -131,7 +143,7 @@ save('config/environment.add.xml',a)
 view = E.Element('viewsettings')
 scheme = E.SubElement(view,'scheme',name='test-intersection')
 E.SubElement(scheme,'background',backgroundColor='234,232,223',showGrid='0')
-E.SubElement(scheme,'edges',laneEdgeMode='0',laneShowBorders='1',showLinkDecals='1',showLinkRules='1',hideConnectors='0')
+E.SubElement(scheme,'edges',laneEdgeMode='0',laneShowBorders='1',showLinkDecals='1',showLinkRules='1',hideConnectors='0',showSublanes='0')
 E.SubElement(scheme,'vehicles',vehicleMode='0',vehicleQuality='2',vehicle_exaggeration='1',vehicle_minSize='1',showBlinker='1')
 E.SubElement(scheme,'junctions',junctionMode='0',drawShape='1',drawCrossingsAndWalkingareas='1')
 E.SubElement(view,'viewport',x='260.5',y='260.5',zoom='110')

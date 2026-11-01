@@ -11,6 +11,10 @@ import xml.etree.ElementTree as E
 R = Path(__file__).resolve().parent
 
 
+def base_kind(kind):
+    return kind.removesuffix('_left').removesuffix('_straight')
+
+
 def rectangle_gaps(a, b):
     """Signed longitudinal/lateral clearance of road-aligned body rectangles."""
     return max(a[0]-b[1], b[0]-a[1]), max(a[2]-b[3], b[2]-a[3])
@@ -74,10 +78,13 @@ for c in links:
         lane = internal_next.get(lane)
 phases = E.parse(R / 'config/traffic_light.add.xml').findall('.//phase')
 expected_phases = []
-for duration,green in [(30,{0,1,2,8,9,10}),(15,{3,11}),(30,{4,5,6,12,13,14}),(15,{7,15})]:
-    expected_phases.append((3,''.join('G' if i in green else 'r' for i in range(16))))
-    expected_phases.extend((seconds,''.join(light if i in green else ('s' if light == 'G' and i in {0,4,8,12} else 'r') for i in range(16)))
-                           for seconds,light in [(duration-3,'G'),(3,'y'),(3,'r')])
+for green,left in [({0,1,2,3,8,9,10,11},{3,11}),({4,5,6,7,12,13,14,15},{7,15})]:
+    for suffix,seconds,light in [(' start',3,'G'),('',48,'G'),(' yellow',3,'y'),(' clearance',3,'r')]:
+        state = ''.join(('g' if i in left else 'G') if light == 'G' and i in green
+                        else light if i in green
+                        else ('s' if light == 'G' and not suffix and i in {0,4,8,12} else 'r')
+                        for i in range(16))
+        expected_phases.append((seconds,state))
 assert [(float(p.get('duration')),p.get('state')) for p in phases] == expected_phases
 cycle = sum(float(p.get('duration')) for p in phases)
 assert cycle == 114
@@ -89,7 +96,9 @@ for phase in phases:
         i = int(request.get('index'))
         for j,foe in enumerate(reversed(request.get('foes'))):
             if foe == '1':
-                assert not (state[via_index[internal[i]]] in 'Gg' and state[via_index[internal[j]]] in 'Gg'), (state,i,j)
+                assert not (state[via_index[internal[i]]] == 'G' and state[via_index[internal[j]]] == 'G'), (state,i,j)
+                if state[via_index[internal[i]]] == 'g' and state[via_index[internal[j]]] == 'G':
+                    assert request.get('response')[::-1][j] == '1', ('Permissive left must yield',i,j)
                 if state[via_index[internal[i]]] == 's' and state[via_index[internal[j]]] in 'Gg':
                     assert request.get('response')[::-1][j] == '1', ('Right-on-red must yield',i,j)
 tls = {round(float(s.get('time')),1):s for s in E.parse(R / output('tls_states.xml')).getroot()}
@@ -107,7 +116,11 @@ route_path = (R / config_path).parent / config.find('input/route-files').get('va
 routes = E.parse(route_path).getroot()
 types = {v.get('id'):v for v in routes.findall('vType')}
 assert all(float(v.get('jmStopSignWait')) == 1 for v in types.values())
-assert all(v.get('impatience') == 'off' and float(v.get('jmStoplineGapMinor')) == 1 for v in types.values())
+assert all(v.get('impatience') == ('0.3' if kind.endswith('_left') else 'off')
+           and float(v.get('jmStoplineGapMinor')) == 1 for kind,v in types.items())
+base_types = {base_kind(kind) for kind in types}
+assert all(types[kind + '_straight'].get('jmAdvance') == '0'
+           and types[kind + '_straight'].get('jmExtraGap') == '1' for kind in base_types)
 route_edges = {r.get('id'):r.get('edges').split() for r in routes.findall('route')}
 vehicles = {v.get('id'):v for v in routes.findall('vehicle')}
 flows = routes.findall('flow')
@@ -147,12 +160,12 @@ for _,step in E.iterparse(R / output('fcd.xml'),events=('end',)):
             source,target = route_edges[spec.get('route')]
             assert c.get('from') == source and c.get('to') == target
             direction = spec.get('route')[-1]
-            kind = spec.get('type')
+            kind = base_kind(spec.get('type'))
             incoming_index = int(c.get('fromLane'))
             entry_lanes[(kind,direction,incoming_index)] += 1
-            expected_lane = 1 if direction == 'l' or (direction == 's' and kind == 'motorcycle') else 0
+            expected_lane = 1 if direction == 'l' or (direction == 's' and kind != 'motorcycle') else 0
             if vehicles or direction != 's':
-                assert incoming_index == expected_lane, (vid,c.attrib)
+                assert incoming_index == (int(spec.get('departLane')) if vehicles and direction == 's' else expected_lane), (vid,c.attrib)
             crossed[vid] = index
         if '_in_' in lane:
             lane_vehicles[lane].append(v)
@@ -167,12 +180,12 @@ for _,step in E.iterparse(R / output('fcd.xml'),events=('end',)):
             road_vehicles[lane.rsplit('_',1)[0]].append(v)
             assert v.get('posLat') is not None, 'Lateral position must be recorded for 2D checks'
             lateral = int(lane.rsplit('_',1)[1])*3.25 + float(v.get('posLat'))
-            width = float(types[v.get('type')].get('width'))
+            width = float(types[base_kind(v.get('type'))].get('width'))
             position = float(v.get('pos'))
-            footprints[vid] = (position-float(types[v.get('type')].get('length')),position,lateral-width/2,lateral+width/2)
+            footprints[vid] = (position-float(types[base_kind(v.get('type'))].get('length')),position,lateral-width/2,lateral+width/2)
             assert lateral-width/2 >= -1.625-.03 and lateral+width/2 <= 4.875+.03, (time,vid,'outside road')
             if abs(float(v.get('posLat'))) > .2:
-                lateral_vehicles[v.get('type')].add(vid)
+                lateral_vehicles[base_kind(v.get('type'))].add(vid)
         previous[vid] = lane
     for lane,items in lane_vehicles.items():
         queued = [v for v in items if float(v.get('speed')) < .1 and float(v.get('pos')) > 180]
@@ -195,7 +208,7 @@ for _,step in E.iterparse(R / output('fcd.xml'),events=('end',)):
 trips = E.parse(R / output('tripinfo.xml')).getroot().findall('tripinfo')
 expected_count = len(vehicles) if vehicles else sum(math.ceil((float(f.get('end'))-float(f.get('begin')))*float(f.get('vehsPerHour'))/3600-1e-9) for f in flows)
 assert len(trips) == len(crossed) == expected_count
-assert {t.get('vType') for t in trips} == {'motorcycle','car','bus'}
+assert {base_kind(t.get('vType')) for t in trips} == {'motorcycle','car','bus'}
 assert all(float(t.get('arrival')) > 0 for t in trips)
 max_delay = max(float(t.get('departDelay')) for t in trips)
 assert max_delay <= (0 if vehicles else cycle), 'Persistent insertion delay exceeds one cycle'
@@ -217,24 +230,24 @@ for change in changes:
             assert float(gap) >= float(secure) - .03, change.attrib
 if vehicles:
     assert len(vehicles) == 40 and len(route_edges) == 12
-    coverage = {(v.get('id')[0],v.get('type'),v.get('route')[-1]) for v in vehicles.values()}
-    assert coverage == {(arm,kind,direction) for arm in 'NESW' for kind in types for direction in 'rsl'}
+    coverage = {(v.get('id')[0],base_kind(v.get('type')),v.get('route')[-1]) for v in vehicles.values()}
+    assert coverage == {(arm,kind,direction) for arm in 'NESW' for kind in base_types for direction in 'rsl'}
     for arm in 'NESW':
         assert any(c.get('id') == arm+'_motorcycle_filter' and c.get('from') == arm+'_in_0' and c.get('to') == arm+'_in_1' for c in changes)
-    assert {vid.split('_')[1] for vid,_,_,_ in right_on_red} == set(types), 'Diagnostic must exercise stop-and-yield for all types'
+    assert {vid.split('_')[1] for vid,_,_,_ in right_on_red} == base_types, 'Diagnostic must exercise stop-and-yield for all types'
 else:
     assert len(route_edges) == 12 and len(flows) == 36
     assert {index for _,_,index,_ in right_on_red} == {0,4,8,12}, 'Exercise right-on-red on all four approaches'
     diagnostic_types = {v.get('id'):v.attrib for v in E.parse(R / 'routes/movement_test.rou.xml').getroot().findall('vType')}
     assert {kind:v.attrib for kind,v in types.items()} == diagnostic_types
-    coverage = {(flow.get('id')[0],flow.get('type'),flow.get('route')[-1]) for flow in flows}
-    assert coverage == {(arm,kind,direction) for arm in 'NESW' for kind in types for direction in 'rsl'}
+    coverage = {(flow.get('id')[0],base_kind(flow.get('type')),flow.get('route')[-1]) for flow in flows}
+    assert coverage == {(arm,kind,direction) for arm in 'NESW' for kind in base_types for direction in 'rsl'}
     assert {(index//4,index%4) for index in crossed.values()} == {(i,j) for i in range(4) for j in range(4)}
     shares = {'motorcycle':.8,'car':.17,'bus':.03}
-    counts = Counter(t.get('vType') for t in trips)
+    counts = Counter(base_kind(t.get('vType')) for t in trips)
     total_rate = sum(float(f.get('vehsPerHour')) for f in flows)
     for kind,share in shares.items():
-        rate = sum(float(f.get('vehsPerHour')) for f in flows if f.get('type') == kind)
+        rate = sum(float(f.get('vehsPerHour')) for f in flows if base_kind(f.get('type')) == kind)
         assert math.isclose(rate/total_rate,share,abs_tol=1e-10)
         # Finite periodic streams round their counts at the interval boundaries.
         assert abs(counts[kind]/len(trips)-share) < .03
@@ -244,13 +257,13 @@ else:
     for arm in 'NESW':
         rate = sum(float(f.get('vehsPerHour')) for f in flows if f.get('route').startswith(arm+'_'))
         assert math.isclose(rate/total_rate,.25,abs_tol=1e-10)
-    for kind in types:
-        preferred = 1 if kind == 'motorcycle' else 0
+    for kind in base_types:
+        preferred = 0 if kind == 'motorcycle' else 1
         straight_total = sum(count for (k,d,lane),count in entry_lanes.items() if k == kind and d == 's')
         # Preference is soft: straight traffic may use either legal lane around queues.
         assert entry_lanes[(kind,'s',preferred)] > straight_total / 2
     for flow in flows:
-        preferred = 1 if flow.get('route').endswith('_l') or (flow.get('route').endswith('_s') and flow.get('type') == 'motorcycle') else 0
+        preferred = 1 if flow.get('route').endswith('_l') or (flow.get('route').endswith('_s') and base_kind(flow.get('type')) != 'motorcycle') else 0
         assert flow.get('departLane') == str(preferred)
         selected = trips_by_flow[flow.get('id')]
         scheduled = sorted(float(t.get('depart'))-float(t.get('departDelay')) for t in selected)

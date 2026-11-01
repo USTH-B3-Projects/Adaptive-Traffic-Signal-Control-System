@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <input>
+    <net-file value="../network/intersection.net.xml" />
+    <route-files value="traffic.rou.xml" />
+    <additional-files value="../config/traffic_light.add.xml,../config/environment.add.xml" />
+  </input>
+  <time>
+    <begin value="0" />
+    <end value="3600" />
+    <step-length value="0.1" />
+  </time>
+  <processing>
+    <collision.check-junctions value="true" />
+    <collision.action value="warn" />
+    <lateral-resolution value="0.325" />
+  </processing>
+  <random_number>
+    <seed value="42" />
+  </random_number>
+  <gui_only>
+    <gui-settings-file value="../config/gui.view.xml" />
+    <delay value="60" />
+  </gui_only>
+</configuration>
