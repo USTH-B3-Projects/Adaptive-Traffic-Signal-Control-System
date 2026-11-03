@@ -1,0 +1,10 @@
+simulation_step: 1
+decision_interval: 5
+min_green: 30
+max_green: 75
+yellow_time: 3
+all_red_time: 0
+gui: false
+max_episode_seconds: null
+sumo_binary: null
+seed: null
