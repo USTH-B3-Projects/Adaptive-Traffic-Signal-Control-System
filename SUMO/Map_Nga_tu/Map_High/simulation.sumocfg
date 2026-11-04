@@ -20,6 +20,6 @@
   </random_number>
   <gui_only>
     <gui-settings-file value="../config/gui.view.xml" />
-    <delay value="60" />
+    <delay value="200" />
   </gui_only>
 </configuration>
