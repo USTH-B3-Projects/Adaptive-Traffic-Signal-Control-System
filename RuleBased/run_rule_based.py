@@ -38,33 +38,27 @@ def show_state(state):
 
 
 with Environment(
-    settings={"gui": True, "max_episode_seconds": 300, "simulation_step": 0.1}
+    settings={"gui": False, "max_episode_seconds": 3600, "simulation_step": 0.1}
 ) as env:
 
-    state = env.reset("imbalance", seed=42)
+    state = env.reset("high", seed=42)
     # Initial state
     show_state(state)
-    with open(log_dir / "rule_based_imbalance_seed42.jsonl", "w", encoding="utf-8") as log_file:
+    with open(log_dir / "rule_based_high_seed42.jsonl", "w", encoding="utf-8") as log_file:
         # Run simulation
-        for i in range(60):
+        i = 0
+        while True:
             action = choose_action(state)
 
             record = {
                 "scenario": state["scenario"],
-                "decision_time": state["simulation_time"],
+                "simulation_time": state["simulation_time"],
                 "phase_id": state["tls"]["J"]["phase_id"],
                 "green_elapsed": state["tls"]["J"]["green_elapsed"],
                 "queues": get_group_queues(state),
+                "total_waiting_time": state["tls"]["J"]["totals"]["waiting_time"],
                 "chosen_action": action,
             }
-            print(
-                "Time:", state["simulation_time"],
-                "Phase:", state["tls"]["J"]["phase_id"],
-                "Green elapsed:", state["tls"]["J"]["green_elapsed"],
-                "Chosen:", action,
-            )
-
-            print("Queues:", get_group_queues(state))
             
             state, terminated, truncated, info = env.step(action)
 
@@ -72,23 +66,14 @@ with Environment(
             record["override_reason"] = info["override_reason"]["J"]
             record["next_time"] = state["simulation_time"]
 
-            print(
-                f"Step {i + 1}: "
-                f"time={state['simulation_time']}s, "
-                f"action={info['executed_action']}"
-            )
-
-            print(
-                "Executed:", info["executed_action"]["J"],
-                "Reason:", info["override_reason"]["J"],
-            )
-
-            # Show details every 15 seconds
-            if i % 3 == 2:
-                show_state(state)
-
             log_file.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+            i += 1
+
+            # Show details after each 60s = 12 turrs
+            if i % 12 == 0:
+                print(f"Progress: {state['simulation_time']:.0f}/3600 s")
+
             if terminated or truncated:
-                print("Simulation ended:", info["end_reason"])
+                print("Simulation ended at {state['simulation_time']:.1f}:", info["end_reason"])
                 break
