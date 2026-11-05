@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import json
+import argparse
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -8,6 +9,24 @@ sys.path.insert(0, str(ROOT / "TraCI"))
 
 from RuleBased.rule_based_controller import choose_action, get_group_queues
 from core.environment import Environment
+
+parser = argparse.ArgumentParser(
+    description="Run the rule-based baseline."
+)
+
+parser.add_argument(
+    "--scenario",
+    choices=["low", "medium", "high", "imbalance"],
+    required=True,
+)
+
+parser.add_argument(
+    "--seed",
+    type=int,
+    required=True,
+)
+
+args = parser.parse_args()
 
 log_dir = ROOT / "RuleBased" / "logs"
 log_dir.mkdir(parents=True, exist_ok=True)
@@ -36,15 +55,18 @@ def show_state(state):
 
         print("\nTotals:", tls["totals"])
 
+log_path = (log_dir / f"rule_based_{args.scenario}_seed{args.seed}.jsonl")
+print(f"Running rule-based: scenario={args.scenario}, seed={args.seed}")
+print(f"Log: {log_path}")
 
 with Environment(
     settings={"gui": False, "max_episode_seconds": 3600, "simulation_step": 0.1}
 ) as env:
 
-    state = env.reset("high", seed=42)
+    state = env.reset(args.scenario, seed=args.seed)
     # Initial state
     show_state(state)
-    with open(log_dir / "rule_based_high_seed42.jsonl", "w", encoding="utf-8") as log_file:
+    with open(log_path, "w", encoding="utf-8") as log_file:
         # Run simulation
         i = 0
         while True:
@@ -52,6 +74,8 @@ with Environment(
 
             record = {
                 "scenario": state["scenario"],
+                "seed": args.seed,
+                "controller": "rule-based",
                 "simulation_time": state["simulation_time"],
                 "phase_id": state["tls"]["J"]["phase_id"],
                 "green_elapsed": state["tls"]["J"]["green_elapsed"],
@@ -75,5 +99,5 @@ with Environment(
                 print(f"Progress: {state['simulation_time']:.0f}/3600 s")
 
             if terminated or truncated:
-                print("Simulation ended at {state['simulation_time']:.1f}:", info["end_reason"])
+                print(f"Simulation ended at {state['simulation_time']:.1f}:", info["end_reason"])
                 break

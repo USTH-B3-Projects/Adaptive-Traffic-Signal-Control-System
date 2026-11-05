@@ -1,4 +1,5 @@
 import json
+import argparse
 from pathlib import Path
 from statistics import mean
 
@@ -10,7 +11,6 @@ CONTROLLERS = {
 }
 
 SCENARIOS = ["low", "medium", "high", "imbalance"]
-SEED = 42
 
 def load_log(file_path):
     records = []
@@ -121,16 +121,38 @@ else:
 """
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Compare fixed-time and rule-based logs."
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        required=True,
+    )
+
+    parser.add_argument(
+        "--scenario",
+        choices=SCENARIOS,
+        default=None,
+    )
+
+    args = parser.parse_args()
+
+    selected_scenarios = (
+        [args.scenario] if args.scenario is not None else SCENARIOS
+    )
+
     results = []
 
-    for scenario in SCENARIOS:
+    for scenario in selected_scenarios:
         print(f"\nScenario: {scenario}")
 
         fixed_path = (
-            CONTROLLERS["fixed_time"] / f"fixed_time_{scenario}_seed{SEED}.jsonl"
+            CONTROLLERS["fixed_time"] / f"fixed_time_{scenario}_seed{args.seed}.jsonl"
         )
         rule_path = (
-            CONTROLLERS["rule_based"] / f"rule_based_{scenario}_seed{SEED}.jsonl"
+            CONTROLLERS["rule_based"] / f"rule_based_{scenario}_seed{args.seed}.jsonl"
         )
 
         fixed_records = normalize_records(load_log(fixed_path))
@@ -157,7 +179,7 @@ def main():
 
             results.append({
                 "scenario": scenario,
-                "seed": SEED,
+                "seed": args.seed,
                 "metric": metric,
                 "baseline": "fixed_time",
                 "candidate": "rule_based",
@@ -171,7 +193,13 @@ def main():
     output_dir = ROOT / "results"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_path = output_dir / f"baseline_comparison_seed{SEED}.jsonl"
+    if args.scenario is None:
+        output_name = f"baseline_comparison_seed{args.seed}.jsonl"
+    else:
+        output_name = (
+            f"baseline_comparison_{args.scenario}_seed{args.seed}.jsonl"
+        )
+    output_path = output_dir / output_name
 
     with open(output_path, "w", encoding="utf-8") as output_file:
         for result in results:

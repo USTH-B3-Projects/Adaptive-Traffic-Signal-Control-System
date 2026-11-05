@@ -51,7 +51,7 @@ Replace TBD with values from baseline_comparison_seed42.jsonl. Round mean values
 ### 4.2. Medium Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 11.82 | 8.99 | 23.97% |
+| `mean_queue` (vehicles) | 11.82 | 8.98 | 23.97% |
 | `max_queue` (vehicles) | 32 | 26 | 18.75% |
 | `mean_total_waiting_time` (s) | 219.65 | 126.96 | 42.2% |
 | `max_total_waiting_time` (s) | 913.7 | 555.1 | 39.25% |
@@ -63,7 +63,7 @@ Replace TBD with values from baseline_comparison_seed42.jsonl. Round mean values
 | `mean_queue` (vehicles) | 49.02 | 38.16 | 22.16% |
 | `max_queue` (vehicles) | 127 | 92 | 27.56% |
 | `mean_total_waiting_time` (s) | 1051.28 | 622.24 | 40.81% |
-| `max_total_waiting_time` (s) | 3710.9 | 2088.8 | 43.715 |
+| `max_total_waiting_time` (s) | 3710.9 | 2088.8 | 43.71% |
 
 
 ### 4.4. Imbalanced Traffic
