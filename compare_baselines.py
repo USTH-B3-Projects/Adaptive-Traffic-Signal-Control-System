@@ -149,10 +149,10 @@ def main():
         print(f"\nScenario: {scenario}")
 
         fixed_path = (
-            CONTROLLERS["fixed_time"] / f"fixed_time_{scenario}_seed{args.seed}.jsonl"
+            CONTROLLERS["fixed_time"] / f"seed{args.seed}" / f"fixed_time_{scenario}_seed{args.seed}.jsonl"
         )
         rule_path = (
-            CONTROLLERS["rule_based"] / f"rule_based_{scenario}_seed{args.seed}.jsonl"
+            CONTROLLERS["rule_based"] / f"seed{args.seed}" / f"rule_based_{scenario}_seed{args.seed}.jsonl"
         )
 
         fixed_records = normalize_records(load_log(fixed_path))

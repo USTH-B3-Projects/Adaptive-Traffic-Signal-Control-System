@@ -28,7 +28,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-log_dir = ROOT / "RuleBased" / "logs"
+log_dir = ROOT / "RuleBased" / "logs" / f"seed{args.seed}"
 log_dir.mkdir(parents=True, exist_ok=True)
 
 def show_state(state):
@@ -75,7 +75,7 @@ with Environment(
             record = {
                 "scenario": state["scenario"],
                 "seed": args.seed,
-                "controller": "rule-based",
+                "controller": "rule_based",
                 "simulation_time": state["simulation_time"],
                 "phase_id": state["tls"]["J"]["phase_id"],
                 "green_elapsed": state["tls"]["J"]["green_elapsed"],
