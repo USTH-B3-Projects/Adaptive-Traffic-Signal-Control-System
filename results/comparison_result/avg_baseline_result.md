@@ -1,4 +1,4 @@
-## Multi-Seed Evaluation (To Be Completed)
+## Multi-Seed Evaluation
 Run both controllers using the same list of seeds for each scenario. Aggregate metric values across seeds separately for each controller.
 
 Seeds tested: 57, 367, 1024
