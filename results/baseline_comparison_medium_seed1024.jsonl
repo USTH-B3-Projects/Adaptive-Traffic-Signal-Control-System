@@ -1,0 +1,4 @@
+{"scenario": "medium", "seed": 1024, "metric": "mean_queue", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 13.309722222222222, "candidate_value": 9.677777777777777, "reduction_percent": 27.287905666284047}
+{"scenario": "medium", "seed": 1024, "metric": "max_queue", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 39, "candidate_value": 28, "reduction_percent": 28.205128205128204}
+{"scenario": "medium", "seed": 1024, "metric": "mean_total_waiting_time", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 244.44416666666666, "candidate_value": 134.4138888888889, "reduction_percent": 45.01243751413354}
+{"scenario": "medium", "seed": 1024, "metric": "max_total_waiting_time", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 1106.8, "candidate_value": 588.4, "reduction_percent": 46.837730393928446}
