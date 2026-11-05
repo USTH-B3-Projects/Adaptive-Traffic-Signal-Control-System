@@ -28,7 +28,7 @@ Seeds tested: 57, 367, 1024
 | `max_total_waiting_time` | 3160.43 ± 357.15 | 2471.07 ± 219.77 | 21.81% |
 
 ### Imbalance Traffic
-| Scenario | Metric | Fixed-Time (mean ± SD) | Rule-Based (mean ± SD) | Reduction (%) |
+| Metric | Fixed-Time (mean ± SD) | Rule-Based (mean ± SD) | Reduction (%) |
 |---|---:|---:|---:|
 | `mean_queue` | 82.78 ± 6.97 | 38.56 ± 4.49 | 53.42% |
 | `max_queue` | 259.67 ± 34.12 | 119.67 ± 3.79 | 53.92% |
