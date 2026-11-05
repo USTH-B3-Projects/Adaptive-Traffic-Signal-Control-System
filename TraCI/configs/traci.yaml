@@ -1,4 +1,4 @@
-simulation_step: 1
+simulation_step: 0.1
 decision_interval: 5
 min_green: 30
 max_green: 75
