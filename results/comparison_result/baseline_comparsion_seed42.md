@@ -63,7 +63,7 @@ Replace TBD with values from baseline_comparison_seed42.jsonl. Round mean values
 | `mean_queue` (vehicles) | 49.02 | 38.16 | 22.16% |
 | `max_queue` (vehicles) | 127 | 92 | 27.56% |
 | `mean_total_waiting_time` (s) | 1051.28 | 622.24 | 40.81% |
-| `max_total_waiting_time` (s) | 3710.9 | 2088.8 | 43.715 |
+| `max_total_waiting_time` (s) | 3710.9 | 2088.8 | 43.71% |
 
 
 ### 4.4. Imbalanced Traffic
