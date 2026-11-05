@@ -5,8 +5,6 @@ import argparse
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "TraCI"))
-log_dir = ROOT / "FixedTime" / "logs"
-log_dir.mkdir(parents=True, exist_ok=True)
 
 from core.scenario_loader import ScenarioLoader, load_settings, validate_settings
 from core.simulation import Simulation
@@ -28,6 +26,9 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
+log_dir = ROOT / "FixedTime" / "logs" / f"seed{args.seed}"
+log_dir.mkdir(parents=True, exist_ok=True)
 
 settings = load_settings()
 
