@@ -1,5 +1,5 @@
 # Baseline Experimental Results
-**Status:** Draft / Initial experiment (seed 42)
+**Status:** Draft / Initial experiment (seed 1024)
 
 **Purpose:** Compare Fixed-Time and Rule-Based traffic signal controllers at a single SUMO intersection.
 
@@ -7,7 +7,6 @@
 Evaluate the performance of two baseline controllers under the same traffic scenarios and random seeds.
 - Baseline controller: Fixed-Time
 - Candidate controller: Rule-Based
-- Research question: Does the Rule-Based controller improve queue and waiting-time metrics compared with Fixed-Time?
 
 ## 2. Experimental Setup
 
@@ -18,10 +17,8 @@ Evaluate the performance of two baseline controllers under the same traffic scen
 | Controllers | Fixed-Time; Rule-Based |
 | Scenarios | Low; Medium; High; Imbalance |
 | Simulation duration | 3600 s (confirm from run configuration) |
-| Initial random seed | 42 |
-| Additional random seeds | TBD |
-| Sampling interval | TBD |
-| Data source | `baseline_comparison_seed42.jsonl` |
+| Initial random seed | 1024 |
+| Data source | `baseline_comparison_seed1024.jsonl` |
 
 Fair comparison checklist: Confirm both controllers use the same scenario, seed, simulation duration, vehicle demand, and metric aggregation rules.
 
@@ -42,34 +39,33 @@ Replace TBD with values from baseline_comparison_seed42.jsonl. Round mean values
 ### 4.1. Low Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 4.60 | 3.53 | 23.39% |
-| `max_queue` (vehicles) | 16 | 12 | 25% |
-| `mean_total_waiting_time` (s) | 89.76 | 50.03 | 44.25% |
-| `max_total_waiting_time` (s) | 468.3 | 243 | 48.11% |
+| `mean_queue` (vehicles) | 4.99 | 3.70 | 25.87% |
+| `max_queue` (vehicles) | 18 | 13 | 27.78% |
+| `mean_total_waiting_time` (s) | 98.82 | 51.75 | 47.63% |
+| `max_total_waiting_time` (s) | 592.1 | 296.4 | 49.94% |
 
 
 ### 4.2. Medium Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 11.82 | 8.98 | 23.97% |
-| `max_queue` (vehicles) | 32 | 26 | 18.75% |
-| `mean_total_waiting_time` (s) | 219.65 | 126.96 | 42.2% |
-| `max_total_waiting_time` (s) | 913.7 | 555.1 | 39.25% |
+| `mean_queue` (vehicles) | 13.31 | 9.68 | 27.29% |
+| `max_queue` (vehicles) | 39 | 28 | 28.21 |
+| `mean_total_waiting_time` (s) | 244.44 | 134.41 | 45.01% |
+| `max_total_waiting_time` (s) | 1106.8 | 588.4 | 46.84% |
 
 
 ### 4.3. High Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 49.02 | 38.16 | 22.16% |
-| `max_queue` (vehicles) | 127 | 92 | 27.56% |
-| `mean_total_waiting_time` (s) | 1051.28 | 622.24 | 40.81% |
-| `max_total_waiting_time` (s) | 3710.9 | 2088.8 | 43.71% |
-
+| `mean_queue` (vehicles) | 47.32 | 46.02 | 2.74% |
+| `max_queue` (vehicles) | 91 | 91 | 0% |
+| `mean_total_waiting_time` (s) | 952.80 | 751.83 | 21.09% |
+| `max_total_waiting_time` (s) | 2991.6 | 2596.4 | 13.21% |
 
 ### 4.4. Imbalanced Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 83.04 | 37.09 | 55.33% |
-| `max_queue` (vehicles) | 226 | 129 | 42.92% |
-| `mean_total_waiting_time` (s) | 1809.59 | 683.95 | 62.2% |
-| `max_total_waiting_time` (s) | 8678.3 | 3891.9 | 55.15% |
+| `mean_queue` (vehicles) | 89.69 | 37.71 | 57.96% |
+| `max_queue` (vehicles) | 299 | 118 | 60.54% |
+| `mean_total_waiting_time` (s) | 1938.14 | 654.03 | 66.25% |
+| `max_total_waiting_time` (s) | 10056.5 | 4499.2 | 55.26% |

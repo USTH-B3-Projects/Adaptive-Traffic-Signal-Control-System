@@ -190,7 +190,7 @@ def main():
         
     print("No. comparision results:", len(results))
 
-    output_dir = ROOT / "results"
+    output_dir = ROOT / "results" / f"seed{args.seed}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.scenario is None:
