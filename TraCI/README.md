@@ -237,3 +237,40 @@ Earlier `run.py`, smoke controllers, recording/output folders, and settings such
 The existing vehicle model can produce collision warnings. In particular, the default 1-second step exceeds motorcycle `tau=0.6`. Signal-transition checks do not establish that the vehicle model is collision-free or calibrated for controller comparisons.
 
 The reduced bridge was verified on 2026-11-03 using 23 checks in a disposable directory outside the repository: all passed, with no skips. Real SUMO ran all four scenarios for 90 seconds, covering timing, state, connection cleanup, and absence of generated files. All 49 SUMO input files retained their SHA-256 hashes. These are prior verification results; this documentation rewrite did not rerun them. A real LLM integration and visual GUI behavior have not been verified.
+# TraCI smoke test
+
+From the repository root, activate the `atsc` environment and run:
+
+```cmd
+python TraCI\test_connection.py --scenario low --steps 100
+```
+
+The script runs SUMO without the GUI and writes queue and basic traffic
+metrics to `TraCI\outputs\queue_low.csv`. Use `--scenario medium`,
+`--scenario high`, or `--scenario imbalance` to test another route set.
+
+## PPO baseline
+
+Run a short baseline from the repository root:
+
+```cmd
+python -m TraCI.train_baseline --scenario low --timesteps 10000
+tensorboard --logdir runs
+```
+
+The policy uses two actions: `0` keeps the current signal stage and `1`
+requests a safe switch. The reward is the negative sum of queue length and
+`0.1` times lane waiting time.
+
+## Evaluate four scenarios
+
+After training a model, evaluate it on all four demand levels:
+
+```cmd
+python -m TraCI.evaluate --model models\ppo_low.zip --output-dir evaluation
+```
+
+This writes `metrics.csv` (one row per decision), `summary.csv` (scenario
+means), and `comparison.png` (time-series comparison). The reported metrics
+are queue length, waiting time, average speed, cumulative arrived vehicles,
+and vehicles remaining in the network.

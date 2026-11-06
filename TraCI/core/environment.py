@@ -101,6 +101,8 @@ class Environment:
                 phase_id={tls: value["phase_id"] for tls, value in self._state["tls"].items()},
                 green_elapsed={tls: value["green_elapsed"] for tls, value in self._state["tls"].items()},
                 automatic_events=automatic,
+                arrived_count=self.connection.simulation.getArrivedNumber(),
+                vehicles_in_network=self.connection.vehicle.getIDCount(),
                 end_reason="demand_exhausted" if terminated else "time_limit" if truncated else None,
             )
             state = self._state
