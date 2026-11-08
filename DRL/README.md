@@ -22,10 +22,10 @@ Your model interacts with `Environment`; it does not need to call the other modu
 - PyYAML, listed in `requirements.txt`.
 - A Python `traci` package compatible with your SUMO version.
 
-Run from the repository root, which contains both `SUMO/` and `TraCI/`:
+Run from the repository root, which contains both `SUMO/` and `DRL/`:
 
 ```powershell
-python -m pip install -r TraCI/requirements.txt
+python -m pip install -r DRL/requirements.txt
 $env:SUMO_HOME = 'D:\Sumo'  # Replace with your SUMO installation directory.
 ```
 
@@ -33,13 +33,13 @@ The bridge finds the binary through PATH or `SUMO_HOME/bin`. It first tries the 
 
 ## Connect your model
 
-Place your integration script at the repository root, alongside `SUMO/` and `TraCI/`. Add the bridge directory to the Python import path:
+Place your integration script at the repository root, alongside `SUMO/` and `DRL/`. Add the bridge directory to the Python import path:
 
 ```python
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "TraCI"))
+sys.path.insert(0, str(Path(__file__).resolve().parent / "DRL"))
 from core.environment import Environment
 
 
@@ -226,7 +226,7 @@ Unsupported programs, such as branched sequences, direct changes between green s
 
 `SignalController` executes timing rules; it is not the LLM/DRL decision algorithm. `core/__init__.py` marks the Python package, and `requirements.txt` lists the Python dependency.
 
-Do not add `TraCI/__init__.py`: on Windows, that directory name can conflict with SUMO's lowercase `traci` package. Use the import setup shown above.
+The `DRL/__init__.py` file marks this directory as the project package. This avoids ambiguity with SUMO's lowercase `traci` package.
 
 ## Files, errors, and limitations
 
@@ -237,16 +237,16 @@ Earlier `run.py`, smoke controllers, recording/output folders, and settings such
 The existing vehicle model can produce collision warnings. In particular, the default 1-second step exceeds motorcycle `tau=0.6`. Signal-transition checks do not establish that the vehicle model is collision-free or calibrated for controller comparisons.
 
 The reduced bridge was verified on 2026-11-03 using 23 checks in a disposable directory outside the repository: all passed, with no skips. Real SUMO ran all four scenarios for 90 seconds, covering timing, state, connection cleanup, and absence of generated files. All 49 SUMO input files retained their SHA-256 hashes. These are prior verification results; this documentation rewrite did not rerun them. A real LLM integration and visual GUI behavior have not been verified.
-# TraCI smoke test
+# TraCI smoke test (archived)
 
 From the repository root, activate the `atsc` environment and run:
 
 ```cmd
-python TraCI\test_connection.py --scenario low --steps 100
+python archive\test_connection.py --scenario low --steps 100
 ```
 
 The script runs SUMO without the GUI and writes queue and basic traffic
-metrics to `TraCI\outputs\queue_low.csv`. Use `--scenario medium`,
+metrics to `DRL\outputs\queue_low.csv`. Use `--scenario medium`,
 `--scenario high`, or `--scenario imbalance` to test another route set.
 
 ## PPO baseline
@@ -254,7 +254,7 @@ metrics to `TraCI\outputs\queue_low.csv`. Use `--scenario medium`,
 Run a short baseline from the repository root:
 
 ```cmd
-python -m TraCI.train_baseline --scenario low --timesteps 10000
+python -m DRL.train_multiscenario --seed 107 --timesteps 10000
 tensorboard --logdir runs
 ```
 
@@ -267,7 +267,7 @@ requests a safe switch. The reward is the negative sum of queue length and
 After training a model, evaluate it on all four demand levels:
 
 ```cmd
-python -m TraCI.evaluate --model models\ppo_low.zip --output-dir evaluation
+python -m DRL.evaluate --model models\ppo_low.zip --output-dir evaluation
 ```
 
 This writes `metrics.csv` (one row per decision), `summary.csv` (scenario

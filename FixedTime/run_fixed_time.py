@@ -4,7 +4,7 @@ import json
 import argparse
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "TraCI"))
+sys.path.insert(0, str(ROOT / "DRL"))
 
 from core.scenario_loader import ScenarioLoader, load_settings, validate_settings
 from core.simulation import Simulation

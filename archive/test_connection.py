@@ -56,7 +56,7 @@ def main() -> int:
         parser.error("--steps must be positive")
 
     config = SCENARIOS[args.scenario]
-    output = args.output or ROOT / "TraCI" / "outputs" / f"queue_{args.scenario}.csv"
+    output = args.output or ROOT / "DRL" / "outputs" / f"queue_{args.scenario}.csv"
     output.parent.mkdir(parents=True, exist_ok=True)
     sumo = find_sumo()
     traci.start([sumo, "-c", str(config), "--seed", "42"])

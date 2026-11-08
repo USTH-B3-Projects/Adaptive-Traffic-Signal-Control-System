@@ -40,7 +40,7 @@ def run_command(command: list[str], timings: dict, key: str) -> bool:
     start = time.perf_counter()
     logging.info("START %s: %s", key, " ".join(command))
     try:
-        with (ROOT / "overnight_subprocess.log").open("a", encoding="utf-8") as output:
+        with (ROOT / "results" / "logs" / "overnight_subprocess_seed107.log").open("a", encoding="utf-8") as output:
             completed = subprocess.run(
                 command,
                 cwd=ROOT,
@@ -190,7 +190,7 @@ def main() -> int:
 
     training_ok = run_command(
         [
-            sys.executable, "-m", "TraCI.train_multiscenario",
+            sys.executable, "-m", "DRL.train_multiscenario",
             "--seed", str(args.seed), "--timesteps", str(args.timesteps),
         ],
         timings,
@@ -198,7 +198,7 @@ def main() -> int:
     )
     evaluation_ok = training_ok and run_command(
         [
-            sys.executable, "-m", "TraCI.evaluate",
+            sys.executable, "-m", "DRL.evaluate",
             "--model", "models/ppo_final.zip", "--output-dir", "evaluation",
             "--seed", str(args.seed),
         ],

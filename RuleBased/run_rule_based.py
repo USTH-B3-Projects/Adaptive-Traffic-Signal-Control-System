@@ -5,7 +5,7 @@ import argparse
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "TraCI"))
+sys.path.insert(0, str(ROOT / "DRL"))
 
 from RuleBased.rule_based_controller import choose_action, get_group_queues
 from core.environment import Environment
