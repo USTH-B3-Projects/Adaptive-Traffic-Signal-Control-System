@@ -172,6 +172,10 @@ def main() -> int:
     parser.add_argument("--timesteps", type=int, default=TIMESTEPS)
     args = parser.parse_args()
     log_path = ROOT / "overnight_execution.log"
+    result_dir = ROOT / "results" / f"seed{args.seed}"
+    evaluation_dir = ROOT / "evaluation" / f"seed{args.seed}"
+    result_dir.mkdir(parents=True, exist_ok=True)
+    evaluation_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(log_path)
     pipeline_start = time.perf_counter()
     timings = {}
@@ -199,7 +203,7 @@ def main() -> int:
     evaluation_ok = training_ok and run_command(
         [
             sys.executable, "-m", "DRL.evaluate",
-            "--model", "models/ppo_final.zip", "--output-dir", "evaluation",
+            "--model", "models/ppo_final.zip", "--output-dir", str(evaluation_dir),
             "--seed", str(args.seed),
         ],
         timings,
@@ -219,15 +223,15 @@ def main() -> int:
             else:
                 logging.error("Missing baseline log: %s", path)
     if evaluation_ok:
-        rows.extend(read_drl_rows(ROOT / "evaluation" / "metrics.csv", timings["drl_evaluation"]))
+        rows.extend(read_drl_rows(evaluation_dir / "metrics.csv", timings["drl_evaluation"]))
     else:
         logging.error("Skipping DRL summary because training/evaluation failed")
 
-    write_summary(rows, ROOT / "results" / "summary_final.csv")
+    write_summary(rows, result_dir / "summary_final.csv")
     if rows:
-        plot_summary(rows, ROOT / "results" / "comparison_final.png")
+        plot_summary(rows, result_dir / "comparison_final.png")
     timings["total_pipeline"] = time.perf_counter() - pipeline_start
-    (ROOT / "results" / "pipeline_timings.json").write_text(
+    (result_dir / "pipeline_timings.json").write_text(
         json.dumps(timings, indent=2), encoding="utf-8"
     )
     logging.info("Pipeline completed in %.2fs", timings["total_pipeline"])

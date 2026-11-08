@@ -246,9 +246,9 @@ def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[st
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--summary", type=Path, default=ROOT / "results" / "summary_final.csv")
-    parser.add_argument("--evaluation", type=Path, default=ROOT / "evaluation" / "summary.csv")
-    parser.add_argument("--timings", type=Path, default=ROOT / "results" / "pipeline_timings.json")
+    parser.add_argument("--summary", type=Path, default=ROOT / "results" / "seed107" / "summary_final.csv")
+    parser.add_argument("--evaluation", type=Path, default=ROOT / "evaluation" / "seed107" / "summary.csv")
+    parser.add_argument("--timings", type=Path, default=ROOT / "results" / "seed107" / "pipeline_timings.json")
     parser.add_argument(
         "--output",
         type=Path,
