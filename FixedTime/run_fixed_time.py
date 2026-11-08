@@ -72,6 +72,7 @@ print(f"Log: {log_path}")
 try:
     connection = simulation.start(scenario, seed=args.seed)
     print("Initial phase:", connection.trafficlight.getPhase("J"))
+    arrived_count = 0
 
     with open(log_path, "w", encoding="utf-8") as log_file:
         next_sample_time = 0.0
@@ -88,12 +89,21 @@ try:
                     "phase_id": connection.trafficlight.getPhase("J"),
                     "queues": get_fixed_time_queues(connection),
                     "total_waiting_time": get_total_waiting_time(connection),
+                    "average_speed": (
+                        sum(connection.vehicle.getSpeed(vehicle_id)
+                            for vehicle_id in connection.vehicle.getIDList())
+                        / connection.vehicle.getIDCount()
+                        if connection.vehicle.getIDCount() else 0.0
+                    ),
+                    "arrived_count": arrived_count,
+                    "vehicles_in_network": connection.vehicle.getIDCount(),
                 }
                 log_file.write(json.dumps(record, ensure_ascii=False) + "\n")
                 next_sample_time += 5
 
             connection.simulationStep()
             now = connection.simulation.getTime()
+            arrived_count += connection.simulation.getArrivedNumber()
 
             if now >= next_progress_time - 1e-8:
                 print(f"Progress: {now:.0f}/3600 s")

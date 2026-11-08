@@ -66,6 +66,7 @@ with Environment(
     state = env.reset(args.scenario, seed=args.seed)
     # Initial state
     show_state(state)
+    arrived_count = 0
     with open(log_path, "w", encoding="utf-8") as log_file:
         # Run simulation
         i = 0
@@ -85,10 +86,16 @@ with Environment(
             }
             
             state, terminated, truncated, info = env.step(action)
+            arrived_count += int(info["arrived_count"])
 
             record["executed_action"] = info["executed_action"]["J"]
             record["override_reason"] = info["override_reason"]["J"]
             record["next_time"] = state["simulation_time"]
+            record["average_speed"] = (
+                state["tls"]["J"]["totals"]["average_speed"] or 0.0
+            )
+            record["arrived_count"] = arrived_count
+            record["vehicles_in_network"] = info["vehicles_in_network"]
 
             log_file.write(json.dumps(record, ensure_ascii=False) + "\n")
 

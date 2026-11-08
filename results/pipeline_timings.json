@@ -1,0 +1,13 @@
+{
+  "fixed_time_low": 28.390106300008483,
+  "fixed_time_medium": 52.50235340000654,
+  "fixed_time_high": 131.5793430999911,
+  "fixed_time_imbalance": 224.5673256000009,
+  "rule_based_low": 21.690819600000395,
+  "rule_based_medium": 40.70455409999704,
+  "rule_based_high": 100.74453419999918,
+  "rule_based_imbalance": 96.88807380000071,
+  "drl_training": 98558.7697274,
+  "drl_evaluation": 300.2863039999793,
+  "total_pipeline": 99558.18377120001
+}
