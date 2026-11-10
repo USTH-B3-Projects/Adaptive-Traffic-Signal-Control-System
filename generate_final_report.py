@@ -64,9 +64,9 @@ def runtime_text(seconds: float) -> str:
     return f"{seconds / 3600:.2f} hours ({seconds:.2f} seconds)"
 
 
-def metric_table(data: dict[tuple[str, str], dict[str, float]]) -> str:
+def metric_table(data: dict[tuple[str, str], dict[str, float]], timesteps: int) -> str:
     lines = [
-        "| Metric | Fixed-Time | Rule-Based | DRL PPO (800k) |",
+        f"| Metric | Fixed-Time | Rule-Based | DRL PPO ({timesteps // 1000}k) |",
         "|---|---:|---:|---:|",
     ]
     for scenario in SCENARIOS:
@@ -117,19 +117,20 @@ def execution_table(data: dict[tuple[str, str], dict[str, float]], timings: dict
     return "\n".join(lines)
 
 
-def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[str, float]) -> str:
+def build_report(data: dict[tuple[str, str], dict[str, float]],
+                 timings: dict[str, float], seed: int, timesteps: int,
+                 checkpoint: Path, plot_path: Path) -> str:
     total = timings.get("total_pipeline", 0.0)
     training = timings.get("drl_training", 0.0)
-    checkpoint = ROOT / "models" / "checkpoints" / "ppo_multiscenario_500000_steps.zip"
     has_20k = any(
         re.search(r"(?<!\d)(?:20k|20000)(?!\d)", str(path), re.IGNORECASE)
         for path in ROOT.glob("**/*")
         if path.is_file()
     )
     report = [
-        "# DRL Seed 107 Experimental Report",
+        f"# DRL Seed {seed} Experimental Report",
         "",
-        "**Status:** Completed Seed 107 multi-scenario PPO experiment.",
+        f"**Status:** Completed Seed {seed} multi-scenario PPO experiment.",
         "",
         "## 1. Objective",
         "",
@@ -143,8 +144,8 @@ def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[st
         "| Simulator | SUMO 1.28.0 |",
         "| Algorithm | PPO (Stable-Baselines3) |",
         "| Training scenarios | Low; Medium; High; Imbalance |",
-        "| Seed | 107 |",
-        "| Timesteps | 800,000 |",
+        f"| Seed | {seed} |",
+        f"| Timesteps | {timesteps:,} |",
         "| Simulation step | 0.1 s |",
         "| Decision interval | 5 s (50 simulation steps) |",
         "| GUI | Disabled |",
@@ -158,9 +159,9 @@ def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[st
         "For waiting time and queue length, lower is better; for speed and "
         "arrivals, higher is better.",
         "",
-        "## 4. Results — Seed 107",
+        f"## 4. Results — Seed {seed}",
         "",
-        metric_table(data),
+        metric_table(data, timesteps),
         "",
         "## 5. DRL PPO Improvement",
         "",
@@ -213,7 +214,7 @@ def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[st
             "### Learning Curve and Checkpoint",
             "",
             f"The recommended deployment checkpoint is "
-            f"`models/checkpoints/ppo_multiscenario_500000_steps.zip` "
+            f"`{checkpoint.relative_to(ROOT).as_posix() if checkpoint.is_relative_to(ROOT) else checkpoint}` "
             f"({'present' if checkpoint.is_file() else 'not found in the workspace'}).",
             "",
             "The requested peak-reward and policy-degradation claims must be "
@@ -232,7 +233,11 @@ def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[st
                 "using the same seed, scenario, and metric definitions."
             ),
             "",
-            "## 9. Data Sources",
+            "## 9. Comparison Plot",
+            "",
+            f"![Seed {seed} comparison]({plot_path.as_posix()})",
+            "",
+            "## 10. Data Sources",
             "",
             "- `results/summary_final.csv`",
             "- `evaluation/summary.csv`",
@@ -246,18 +251,34 @@ def build_report(data: dict[tuple[str, str], dict[str, float]], timings: dict[st
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--summary", type=Path, default=ROOT / "results" / "seed107" / "summary_final.csv")
-    parser.add_argument("--evaluation", type=Path, default=ROOT / "evaluation" / "seed107" / "summary.csv")
-    parser.add_argument("--timings", type=Path, default=ROOT / "results" / "seed107" / "pipeline_timings.json")
+    parser.add_argument("--seed", type=int, default=107)
+    parser.add_argument("--timesteps", type=int, default=800_000)
+    parser.add_argument("--summary", type=Path)
+    parser.add_argument("--evaluation", type=Path)
+    parser.add_argument("--timings", type=Path)
+    parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--plot", type=Path)
     parser.add_argument(
         "--output",
         type=Path,
         default=ROOT / "results" / "comparison_result" / "drl_seed107_report.md",
     )
     args = parser.parse_args()
+    seed_dir = ROOT / "results" / f"seed{args.seed}"
+    evaluation_dir = ROOT / "evaluation" / f"seed{args.seed}"
+    args.summary = args.summary or seed_dir / "summary_final.csv"
+    args.evaluation = args.evaluation or evaluation_dir / "summary.csv"
+    args.timings = args.timings or seed_dir / "pipeline_timings.json"
+    args.checkpoint = args.checkpoint or ROOT / "models" / f"seed{args.seed}" / "checkpoints" / f"ppo_seed{args.seed}_500000_steps.zip"
+    args.plot = args.plot or seed_dir / "plots" / f"seed{args.seed}_baseline_comparison_5plots.png"
     data = load_summary(args.summary)
     if args.evaluation.is_file():
-        data.update(load_evaluation_summary(args.evaluation))
+        evaluation_data = load_evaluation_summary(args.evaluation)
+        for key, row in evaluation_data.items():
+            data.setdefault(key, {}).update(
+                {metric: value for metric, value in row.items()
+                 if metric not in data.get(key, {})}
+            )
     timings = load_timings(args.timings)
     missing = [
         (method, scenario)
@@ -268,7 +289,7 @@ def main() -> int:
     if missing:
         raise ValueError(f"Missing summary rows: {missing}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(build_report(data, timings), encoding="utf-8")
+    args.output.write_text(build_report(data, timings, args.seed, args.timesteps, args.checkpoint, args.plot), encoding="utf-8")
     print(f"Generated report: {args.output}")
     return 0
 

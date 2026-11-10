@@ -55,6 +55,8 @@ def main() -> int:
     parser.add_argument("--timesteps", type=int, default=800_000)
     parser.add_argument("--model", type=Path, default=Path("models/ppo_final"))
     parser.add_argument("--log-dir", type=Path, default=Path("runs/ppo_overnight"))
+    parser.add_argument("--device", default="auto", choices=("auto", "cpu", "cuda"))
+    parser.add_argument("--checkpoint-prefix", default="ppo_multiscenario")
     parser.add_argument(
         "--checkpoint-dir", type=Path, default=Path("models/checkpoints")
     )
@@ -68,7 +70,7 @@ def main() -> int:
     callback = CheckpointCallback(
         save_freq=50_000,
         save_path=str(args.checkpoint_dir),
-        name_prefix="ppo_multiscenario",
+        name_prefix=args.checkpoint_prefix,
     )
     model = PPO(
         "MlpPolicy",
@@ -76,6 +78,7 @@ def main() -> int:
         seed=args.seed,
         verbose=1,
         tensorboard_log=str(args.log_dir),
+        device=args.device,
     )
     try:
         model.learn(total_timesteps=args.timesteps, callback=callback)

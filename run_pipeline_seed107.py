@@ -40,7 +40,7 @@ def run_command(command: list[str], timings: dict, key: str) -> bool:
     start = time.perf_counter()
     logging.info("START %s: %s", key, " ".join(command))
     try:
-        with (ROOT / "results" / "logs" / "overnight_subprocess_seed107.log").open("a", encoding="utf-8") as output:
+        with (ROOT / "results" / "logs" / "pipeline_seed107_subprocess.log").open("a", encoding="utf-8") as output:
             completed = subprocess.run(
                 command,
                 cwd=ROOT,
@@ -171,11 +171,14 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=SEED)
     parser.add_argument("--timesteps", type=int, default=TIMESTEPS)
     args = parser.parse_args()
-    log_path = ROOT / "overnight_execution.log"
+    log_path = ROOT / "pipeline_seed107.log"
     result_dir = ROOT / "results" / f"seed{args.seed}"
     evaluation_dir = ROOT / "evaluation" / f"seed{args.seed}"
+    model_dir = ROOT / "models" / f"seed{args.seed}"
+    checkpoint_dir = model_dir / "checkpoints"
     result_dir.mkdir(parents=True, exist_ok=True)
     evaluation_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(log_path)
     pipeline_start = time.perf_counter()
     timings = {}
@@ -196,6 +199,10 @@ def main() -> int:
         [
             sys.executable, "-m", "DRL.train_multiscenario",
             "--seed", str(args.seed), "--timesteps", str(args.timesteps),
+            "--model", str(model_dir / f"ppo_seed{args.seed}_final"),
+            "--log-dir", str(ROOT / "runs" / f"ppo_seed{args.seed}"),
+            "--checkpoint-prefix", f"ppo_seed{args.seed}",
+            "--checkpoint-dir", str(checkpoint_dir),
         ],
         timings,
         "drl_training",
@@ -203,7 +210,8 @@ def main() -> int:
     evaluation_ok = training_ok and run_command(
         [
             sys.executable, "-m", "DRL.evaluate",
-            "--model", "models/ppo_final.zip", "--output-dir", str(evaluation_dir),
+            "--model", str(ROOT / "models" / f"seed{args.seed}" / f"ppo_seed{args.seed}_final.zip"),
+            "--output-dir", str(evaluation_dir),
             "--seed", str(args.seed),
         ],
         timings,
