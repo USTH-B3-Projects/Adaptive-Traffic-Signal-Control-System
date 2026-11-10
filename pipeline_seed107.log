@@ -1,0 +1,22 @@
+2026-11-07 04:14:50,090 INFO Pipeline started: seed=107 timesteps=800000
+2026-11-07 04:14:50,090 INFO START fixed_time_low: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario low --seed 107
+2026-11-07 04:15:18,480 INFO DONE fixed_time_low in 28.39s
+2026-11-07 04:15:18,480 INFO START fixed_time_medium: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario medium --seed 107
+2026-11-07 04:16:10,983 INFO DONE fixed_time_medium in 52.50s
+2026-11-07 04:16:10,983 INFO START fixed_time_high: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario high --seed 107
+2026-11-07 04:18:22,563 INFO DONE fixed_time_high in 131.58s
+2026-11-07 04:18:22,563 INFO START fixed_time_imbalance: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario imbalance --seed 107
+2026-11-07 04:22:07,130 INFO DONE fixed_time_imbalance in 224.57s
+2026-11-07 04:22:07,131 INFO START rule_based_low: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario low --seed 107
+2026-11-07 04:22:28,821 INFO DONE rule_based_low in 21.69s
+2026-11-07 04:22:28,822 INFO START rule_based_medium: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario medium --seed 107
+2026-11-07 04:23:09,527 INFO DONE rule_based_medium in 40.70s
+2026-11-07 04:23:09,527 INFO START rule_based_high: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario high --seed 107
+2026-11-07 04:24:50,272 INFO DONE rule_based_high in 100.74s
+2026-11-07 04:24:50,272 INFO START rule_based_imbalance: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario imbalance --seed 107
+2026-11-07 04:26:27,161 INFO DONE rule_based_imbalance in 96.89s
+2026-11-07 04:26:27,161 INFO START drl_training: C:\Users\Admin\miniconda3\envs\atsc\python.exe -m TraCI.train_multiscenario --seed 107 --timesteps 800000
+2026-11-08 07:49:05,931 INFO DONE drl_training in 98558.77s
+2026-11-08 07:49:05,933 INFO START drl_evaluation: C:\Users\Admin\miniconda3\envs\atsc\python.exe -m TraCI.evaluate --model models/ppo_final.zip --output-dir evaluation --seed 107
+2026-11-08 07:54:06,220 INFO DONE drl_evaluation in 300.29s
+2026-11-08 07:54:08,276 INFO Pipeline completed in 99558.18s

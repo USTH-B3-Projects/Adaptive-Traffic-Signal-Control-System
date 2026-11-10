@@ -1,0 +1,24 @@
+2026-11-10 02:34:44,832 INFO Using CUDA device: Quadro RTX 3000
+2026-11-10 02:34:44,832 INFO START fixed_time_low: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario low --seed 710
+2026-11-10 02:35:12,985 INFO DONE fixed_time_low in 28.15s
+2026-11-10 02:35:12,985 INFO START fixed_time_medium: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario medium --seed 710
+2026-11-10 02:36:03,604 INFO DONE fixed_time_medium in 50.62s
+2026-11-10 02:36:03,604 INFO START fixed_time_high: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario high --seed 710
+2026-11-10 02:38:11,724 INFO DONE fixed_time_high in 128.12s
+2026-11-10 02:38:11,724 INFO START fixed_time_imbalance: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\FixedTime\run_fixed_time.py --scenario imbalance --seed 710
+2026-11-10 02:42:38,680 INFO DONE fixed_time_imbalance in 266.96s
+2026-11-10 02:42:38,681 INFO START rule_based_low: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario low --seed 710
+2026-11-10 02:42:58,998 INFO DONE rule_based_low in 20.32s
+2026-11-10 02:42:58,999 INFO START rule_based_medium: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario medium --seed 710
+2026-11-10 02:43:37,886 INFO DONE rule_based_medium in 38.89s
+2026-11-10 02:43:37,886 INFO START rule_based_high: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario high --seed 710
+2026-11-10 02:45:20,038 INFO DONE rule_based_high in 102.15s
+2026-11-10 02:45:20,038 INFO START rule_based_imbalance: C:\Users\Admin\miniconda3\envs\atsc\python.exe D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\RuleBased\run_rule_based.py --scenario imbalance --seed 710
+2026-11-10 02:46:58,633 INFO DONE rule_based_imbalance in 98.60s
+2026-11-10 02:46:58,634 INFO START drl_training: C:\Users\Admin\miniconda3\envs\atsc\python.exe -m DRL.train_multiscenario --seed 710 --timesteps 600000 --device cuda --checkpoint-prefix ppo_seed710 --model D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\models\seed710\ppo_seed710_final --log-dir D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\runs\ppo_seed710 --checkpoint-dir D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\models\seed710\checkpoints
+2026-11-10 23:35:40,939 INFO DONE drl_training in 74922.30s
+2026-11-10 23:35:40,943 INFO START drl_evaluation: C:\Users\Admin\miniconda3\envs\atsc\python.exe -m DRL.evaluate --seed 710 --model D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\models\seed710\ppo_seed710_final.zip --output-dir D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\evaluation\seed710
+2026-11-10 23:41:45,521 INFO DONE drl_evaluation in 364.58s
+2026-11-10 23:41:47,035 INFO START report_generation: C:\Users\Admin\miniconda3\envs\atsc\python.exe generate_final_report.py --seed 710 --timesteps 600000 --output D:\grp prj new lap\Adaptive-Traffic-Signal-Control-System\results\comparison_result\drl_seed710_report.md
+2026-11-10 23:41:47,224 INFO DONE report_generation in 0.19s
+2026-11-10 23:41:47,224 INFO Pipeline completed in 76022.20s
