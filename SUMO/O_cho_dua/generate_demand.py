@@ -2,6 +2,8 @@
 """Generate reproducible traffic scenarios through the O Cho Dua junction."""
 
 import argparse
+import csv
+import random
 import math
 import os
 import sys
@@ -9,7 +11,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
-SCENARIO_RATES = {"low": 600, "medium": 1200, "high": 1800, "peak": 2400}
+ROOT = Path(__file__).resolve().parent
+SCENARIO_RATES = {"high": 5400, "imbalance": 4200}
 MOVEMENT_SHARES = {"straight": 0.50, "left": 0.25, "right": 0.25}
 # shortcut: exclude the blocked 12 m bus movement at Nguyen Luong Bang, revisit after junction review.
 BUS_APPROACHES = {"ton_duc_thang", "xa_dan", "o_cho_dua"}
@@ -57,12 +60,12 @@ APPROACHES = {
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=SCENARIO_RATES, default="medium")
-    parser.add_argument("--pattern", choices=("balanced", "unbalanced"), default="balanced")
+    parser.add_argument("--scenario", type=str.lower, choices=(*SCENARIO_RATES, "all"), default="all")
+    parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--motorcycle-share", type=float, default=0.80)
     parser.add_argument("--rate", type=float, help="override total vehicles/hour")
-    parser.add_argument("--duration", type=int, default=3600)
-    parser.add_argument("--output", type=Path, default=Path(__file__).with_name("research.rou.xml"))
+    parser.add_argument("--duration", type=int)
+    parser.add_argument("--output", type=Path, default=None)
     return parser.parse_args()
 
 
@@ -73,9 +76,7 @@ def load_network():
     sys.path.append(str(Path(sumo_home) / "tools"))
     import sumolib
 
-    config = ET.parse(Path(__file__).with_name("osm.sumocfg"))
-    net_file = config.find("./input/net-file").get("value")
-    return sumolib.net.readNet(str(Path(__file__).with_name(net_file)))
+    return sumolib.net.readNet(str(ROOT / "network/osm.fixed.net.xml"))
 
 
 def validate_movements(net):
@@ -169,56 +170,113 @@ def add_vehicle_types(root, motorcycle_share, bus_approach_share):
                   probabilities=f"{motorcycle_share:.12g} {other - bus_straight:.12g} {bus_straight:.12g}")
 
 
+def make_profile(scenario, rate, duration, seed):
+    """30-second average rates, interpolated between seeded demand peaks."""
+    rng = random.Random(seed)
+    names = list(APPROACHES)
+    balanced = {name: .25 for name in names}
+    anchors = [(0, balanced)]
+    if scenario == "imbalance":
+        time = 600
+        order = names[:]
+        rng.shuffle(order)
+        index = 0
+        while time < duration - 600:
+            dominant = order[index % len(order)]
+            peak = rng.uniform(.50, .65)
+            weights = {name: (1-peak)/3 for name in names}
+            weights[dominant] = peak
+            anchors.append((time, weights))
+            time += rng.randint(900, 1500)
+            index += 1
+    anchors.append((duration, balanced))
+    rows = []
+    index = 0
+    for begin in range(0, duration, 30):
+        end = min(begin + 30, duration)
+        midpoint = (begin + end)/2
+        while index + 1 < len(anchors)-1 and midpoint > anchors[index+1][0]:
+            index += 1
+        start, left = anchors[index]
+        stop, right = anchors[index+1]
+        fraction = (midpoint-start)/(stop-start)
+        fraction = fraction*fraction*(3-2*fraction)
+        weights = {name: left[name]*(1-fraction)+right[name]*fraction for name in names}
+        rows.append((begin, end, weights))
+    return rows
+
+
+def generate(scenario, args):
+    rate = args.rate if args.rate is not None else SCENARIO_RATES[scenario]
+    duration = args.duration if args.duration is not None else (10800 if scenario == "imbalance" else 3600)
+    if duration <= 0 or not math.isfinite(rate) or rate <= 0:
+        raise SystemExit("Duration and finite rate must be positive")
+    directory = ROOT / "scenarios" / scenario.capitalize()
+    directory.mkdir(parents=True, exist_ok=True)
+    route_file = args.output.resolve() if args.output else directory / "traffic.rou.xml"
+    root = ET.Element("routes")
+    root.append(ET.Comment(f"Experimental {scenario}; {rate:g} veh/h; seed {args.seed}"))
+    profile = make_profile(scenario, rate, duration, args.seed)
+    if any(rate * max(weights.values()) * max(MOVEMENT_SHARES.values()) / 3600 > 1
+           for _, _, weights in profile):
+        raise SystemExit("Rate exceeds the per-flow probability limit (1 vehicle/second)")
+    for index, (begin, end, weights) in enumerate(profile):
+        # Each interval needs its own mix: buses cannot enter from Nguyen Luong Bang.
+        types = ET.Element("routes")
+        add_vehicle_types(types, args.motorcycle_share, sum(weights[n] for n in BUS_APPROACHES))
+        suffix = f"_{index}"
+        if index == 0:
+            root.extend(types.findall("vType"))
+        for mix in types.findall("vTypeDistribution"):
+            mix.set("id", mix.get("id") + suffix)
+            root.append(mix)
+        for name, approach in APPROACHES.items():
+            for movement, (outgoing, destination) in approach["movements"].items():
+                mix = "traffic_mix_straight" if movement == "straight" and name in BUS_APPROACHES else "traffic_mix"
+                ET.SubElement(root, "flow", id=f"{name}_{movement}_{index}",
+                    type=mix+suffix, begin=str(begin), end=str(end),
+                    probability=f"{rate*weights[name]*MOVEMENT_SHARES[movement]/3600:.17g}",
+                    **{"from": approach["source"], "to": destination,
+                       "via": f'{approach["incoming"]} {outgoing}',
+                       "departLane": "best", "departSpeed": "max"})
+    ET.indent(root, space="    ")
+    ET.ElementTree(root).write(route_file, encoding="utf-8", xml_declaration=True)
+    with (directory / "demand_profile.csv").open("w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["begin", "end", *APPROACHES])
+        for begin, end, weights in profile:
+            writer.writerow([begin, end, *(f"{rate*weights[n]:.6f}" for n in APPROACHES)])
+    config = ET.parse(ROOT / "config/base.sumocfg")
+    config.find("input/net-file").set("value", "../../network/osm.fixed.net.xml")
+    config.find("input/route-files").set("value", os.path.relpath(route_file, directory).replace("\\", "/"))
+    config.find("input/additional-files").set("value", "../../network/osm.poly.xml.gz")
+    config.find("gui_only/gui-settings-file").set("value", "../../config/osm.view.xml")
+    output = ROOT / "output" / scenario.capitalize() / f"seed{args.seed}"
+    output.mkdir(parents=True, exist_ok=True)
+    for key, filename in [("tripinfo-output", "tripinfos.xml"), ("statistic-output", "stats.xml")]:
+        config.find("output/"+key).set("value", os.path.relpath(output/filename, directory).replace("\\", "/"))
+    extra = ET.parse(ROOT / "config/output.add.xml").getroot()
+    extra.find("edgeData").set("period", "60")
+    extra.find("edgeData").set("file", os.path.relpath(output/"edgeData.xml", directory).replace("\\", "/"))
+    ET.indent(extra)
+    ET.ElementTree(extra).write(directory/"output.add.xml", encoding="utf-8", xml_declaration=True)
+    config.find("input/additional-files").set("value", "../../network/osm.poly.xml.gz,output.add.xml")
+    ET.SubElement(config.getroot(), "random_number").append(ET.Element("seed", value=str(args.seed)))
+    ET.indent(config)
+    config.write(directory/"simulation.sumocfg", encoding="utf-8", xml_declaration=True)
+    print(f"{scenario}: {rate:g} veh/h, demand 0-{duration}s, clearance until empty; seed {args.seed}")
+
+
 def main():
     args = parse_args()
     if not 0 <= args.motorcycle_share <= 1:
         raise SystemExit("--motorcycle-share must be between 0 and 1")
-    if args.duration <= 0:
-        raise SystemExit("--duration must be positive")
-    rate = args.rate if args.rate is not None else SCENARIO_RATES[args.scenario]
-    if not math.isfinite(rate) or rate <= 0:
-        raise SystemExit("--rate must be finite and positive")
-
+    if args.output and args.scenario == "all":
+        raise SystemExit("--output requires one scenario")
     net = load_network()
     validate_movements(net)
-    root = ET.Element("routes")
-    root.append(ET.Comment(
-        f" Experimental assumptions: {args.scenario}/{args.pattern}, "
-        f"{rate:g} veh/h, {args.motorcycle_share:.0%} motorcycles. "
-    ))
-    approach_weights = {name: 1.0 for name in APPROACHES}
-    if args.pattern == "unbalanced":
-        approach_weights["o_cho_dua"] = 3.0
-    weight_total = sum(approach_weights.values())
-    add_vehicle_types(root, args.motorcycle_share,
-                      sum(approach_weights[name] for name in BUS_APPROACHES) / weight_total)
-
-    for name, approach in APPROACHES.items():
-        approach_rate = rate * approach_weights[name] / weight_total
-        for movement, (outgoing, destination) in approach["movements"].items():
-            ET.SubElement(
-                root,
-                "flow",
-                id=f"{name}_{movement}",
-                type="traffic_mix_straight" if movement == "straight" and name in BUS_APPROACHES else "traffic_mix",
-                begin="0",
-                end=str(args.duration),
-                vehsPerHour=f"{approach_rate * MOVEMENT_SHARES[movement]:.3f}",
-                **{
-                    "from": approach["source"],
-                    "to": destination,
-                    "via": f'{approach["incoming"]} {outgoing}',
-                    "departLane": "best",
-                    "departSpeed": "max",
-                },
-            )
-
-    ET.indent(root, space="    ")
-    args.output.write_text(
-        '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode") + "\n",
-        encoding="utf-8",
-    )
-    print(f"Wrote {args.output}: {rate:g} veh/h, {args.motorcycle_share:.0%} motorcycles")
+    for scenario in SCENARIO_RATES if args.scenario == "all" else [args.scenario]:
+        generate(scenario, args)
 
 
 if __name__ == "__main__":
