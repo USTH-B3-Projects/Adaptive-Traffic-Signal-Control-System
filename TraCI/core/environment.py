@@ -11,12 +11,18 @@ from .state_extractor import StateExtractor
 
 class Environment:
     def __init__(self, config_path: Path | str | None = None,
-                 scenarios_path: Path | str | None = None, *, settings: dict | None = None):
+                 scenarios_path: Path | str | None = None, *, 
+                 settings: dict | None = None,
+                 tls_ids=None,
+                 green_phases_by_tls=None,
+                ):
         self.settings = validate_settings(load_settings(config_path) | (settings or {}))
         self.loader = ScenarioLoader(scenarios_path)
         self.simulation = Simulation(self.settings)
         self.signals = None
         self._done = True
+        self.tls_ids = tls_ids
+        self.green_phases_by_tls = green_phases_by_tls
 
     @property
     def connection(self):
@@ -44,7 +50,12 @@ class Environment:
                 if steps <= 0 or not math.isclose(steps, round(steps), abs_tol=1e-8, rel_tol=0):
                     raise ValueError("Episode end must be after begin and align with simulation_step")
             connection = self.simulation.start(self.scenario, actual_seed)
-            self.signals = SignalController(connection, self.settings)
+            self.signals = SignalController(
+                connection,
+                self.settings,
+                tls_ids=self.tls_ids,
+                green_phases_by_tls=self.green_phases_by_tls,
+            )
             if not self.signals.tls_ids:
                 raise ValueError("Scenario contains no traffic lights to control")
             self.extractor = StateExtractor(connection, self.signals)

@@ -95,7 +95,7 @@ def config_inputs(config_path: Path) -> tuple[ET.Element, dict[str, tuple[Path, 
 
 class ScenarioLoader:
     def __init__(self, path: Path | str | None = None) -> None:
-        self.path = Path(path) if path is not None else CONFIG_DIR / "scenarios.yaml"
+        self.path = Path(path) if path is not None else CONFIG_DIR / "scenarios_simple_intersection.yaml"
 
     def load(self, name: str) -> Scenario:
         mapping = _yaml(self.path)

@@ -3,7 +3,7 @@ import math
 
 
 class SignalController:
-    def __init__(self, connection, settings: dict) -> None:
+    def __init__(self, connection, settings: dict, *, tls_ids=None, green_phases_by_tls=None) -> None:
         self.connection = connection
         self.step = float(settings.get("simulation_step", 1))
         if not math.isfinite(self.step) or self.step <= 0:
@@ -14,7 +14,34 @@ class SignalController:
         red = self._duration(settings.get("all_red_time", 0))
         if self.maximum < self.minimum or self.maximum <= 0:
             raise ValueError("max_green must be positive and >= min_green")
-        self.tls_ids = tuple(connection.trafficlight.getIDList())
+        available_tls = tuple(connection.trafficlight.getIDList())
+
+        if isinstance(tls_ids, str):
+            raise ValueError("tls_ids must be a list or tuple, not a string")
+
+        self.tls_ids = (
+            available_tls if tls_ids is None else tuple(tls_ids)
+        )
+
+        unknown_tls = set(self.tls_ids) - set(available_tls)
+
+        if unknown_tls:
+            raise ValueError(f"Unknown TLS IDs: {sorted(unknown_tls)}")
+
+        if len(self.tls_ids) != len(set(self.tls_ids)):
+            raise ValueError("Duplicate TLS IDs")
+
+        profiles = (
+            {} if green_phases_by_tls is None else green_phases_by_tls
+        )
+
+        unknown_profiles = set(profiles) - set(self.tls_ids)
+
+        if unknown_profiles:
+            raise ValueError(
+                f"Green phase profiles refer to unselected TLS: "
+                f"{sorted(unknown_profiles)}"
+            )
         self._signals = {}
         now = connection.simulation.getTime()
         for tls in self.tls_ids:
@@ -23,6 +50,23 @@ class SignalController:
             if len(programs) != 1 or programs[0].type != 0:
                 raise ValueError(f"{tls}: requires one active static program")
             phases = programs[0].phases
+
+            explicit = profiles.get(tls)
+
+            if explicit is not None:
+                explicit = tuple(explicit)
+
+                if (
+                    len(explicit) < 2
+                    or any(
+                        type(i) is not int or not 0 <= i < len(phases)
+                        for i in explicit
+                    )
+                    or len(set(explicit)) != len(explicit)
+                ):
+                    raise ValueError(f"{tls}: invalid green phase indices")
+
+                self._validate_explicit_phases(tls, phases, set(explicit))
             masks, durations = [], []
             for i, phase in enumerate(phases):
                 if phase.next and tuple(phase.next) != ((i + 1) % len(phases),):
@@ -30,19 +74,39 @@ class SignalController:
                 state = phase.state
                 if not state or set(state) - set("rGgys"):
                     raise ValueError(f"{tls}: unsupported signal state {state}")
-                mask = tuple((j, c) for j, c in enumerate(state) if c in "Gg")
-                if mask and "y" in state:
-                    raise ValueError(f"{tls}: mixed green/yellow phase unsupported")
+                mask = tuple(
+                    (j, c) for j, c in enumerate(state) if c in "Gg"
+                )
+
+                if explicit is None and mask and "y" in state:
+                    raise ValueError(
+                        f"{tls}: mixed green/yellow phase unsupported"
+                    )
+
                 if not mask and "s" in state:
-                    raise ValueError(f"{tls}: permissive movement outside a green stage")
+                    raise ValueError(
+                        f"{tls}: permissive movement outside a green stage"
+                    )
+
+                if explicit is not None and i not in explicit:
+                    mask = ()
+
                 masks.append(mask)
                 duration = self._duration(phase.duration)
                 if duration <= 0:
                     raise ValueError(f"{tls}: phase durations must be positive")
-                durations.append(max(duration, yellow if "y" in state else red if not mask else 0))
+                if explicit is not None:
+                    durations.append(duration)
+                else:
+                    durations.append(
+                        max(
+                            duration,
+                            yellow if "y" in state else red if not mask else 0,
+                        )
+                    )
             if len({len(p.state) for p in phases}) != 1 or not any(masks):
                 raise ValueError(f"{tls}: invalid phase states")
-            if red and not any(set(p.state) == {"r"} for p in phases):
+            if explicit is None and red and not any(set(p.state) == {"r"} for p in phases):
                 raise ValueError(f"{tls}: requested all-red absent from program")
             starts = [i for i, mask in enumerate(masks) if mask and mask != masks[i - 1]]
             if len(starts) < 2:
@@ -56,8 +120,10 @@ class SignalController:
                     if masks[nxt] != masks[start]:
                         if masks[nxt] or "y" not in phases[nxt].state:
                             raise ValueError(f"{tls}: green must be followed by yellow")
-                        if any(phases[nxt].state[j] != "y" for j, _ in masks[i]):
-                            raise ValueError(f"{tls}: yellow must clear every green movement")
+                        if explicit is None and any(phases[nxt].state[j] != "y" for j, _ in masks[i]):
+                            raise ValueError(
+                                f"{tls}: yellow must clear every green movement"
+                            )
                         break
                     prefix += durations[i]
                     i = nxt
@@ -76,6 +142,43 @@ class SignalController:
         # Validate every signal before taking ownership of any signal.
         for tls in self.tls_ids:
             connection.trafficlight.setPhaseDuration(tls, 1e9)
+
+    @staticmethod
+    def _validate_explicit_phases(tls, phases, greens):
+        # Phases state length must be consistent
+        if len({len(p.state) for p in phases}) != 1:
+            raise ValueError(f"{tls}: inconsistent phase state lengths")
+
+        # Selected phase must be a stable green
+        # and each green phase must be followed by yellow
+        for i in greens:
+            state = phases[i].state
+            nxt = (i + 1) % len(phases)
+
+            if "y" in state or not any(c in "Gg" for c in state):
+                raise ValueError(
+                    f"{tls}: selected green phase is not a stable green"
+                )
+
+            if nxt in greens or "y" not in phases[nxt].state:
+                raise ValueError(
+                    f"{tls}: each green phase must be followed by yellow"
+                )
+
+        # Validate each state through phases, even end -> start
+        for i, phase in enumerate(phases):
+            previous = phases[i - 1].state
+
+            for before, after in zip(previous, phase.state):
+                if before in "Gg" and after not in "Ggy":
+                    raise ValueError(
+                        f"{tls}: green movement must clear through yellow"
+                    )
+
+                if i not in greens and after in "Gg" and before != after:
+                    raise ValueError(
+                        f"{tls}: transition introduces or changes a green"
+                    )
 
     def _duration(self, value: float) -> float:
         value = float(value)

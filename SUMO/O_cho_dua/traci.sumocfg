@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <input>
+        <net-file value="osm.fixed.net.xml"/>
+        <route-files value="research.rou.xml"/>
+    </input>
+
+    <processing>
+        <tls.actuated.jam-threshold value="30"/>
+        <lateral-resolution value="0.4"/>
+    </processing>
+
+    <routing>
+        <device.rerouting.adaptation-steps value="18"/>
+        <device.rerouting.adaptation-interval value="10"/>
+    </routing>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="0.1"/>
+    </time>
+
+    <report>
+        <no-step-log value="true"/>
+    </report>
+</configuration>

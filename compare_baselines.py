@@ -45,7 +45,7 @@ def normalize_records(records):
     return normalized
 
 """# Test func
-file_path = ROOT / "FixedTime" / "logs" / "fixed_time_low_seed42.jsonl"
+file_path = ROOT / "FixedTime" / "logs" / args.map_name / "fixed_time_low_seed42.jsonl"
 
 records = load_log(file_path)
 normalized = normalize_records(records)
@@ -64,19 +64,6 @@ def validate_pair(fixed_records, rule_records):
     for fixed_record, rule_record in zip(fixed_records, rule_records):
         if fixed_record["time"] != rule_record["time"]:
             raise ValueError("Different time")
-
-"""
-fixed_records = normalize_records(load_log(
-    ROOT / "FixedTime" / "logs" / "fixed_time_low_seed42.jsonl"
-))
-
-rule_records = normalize_records(load_log(
-    ROOT / "RuleBased" / "logs" / "rule_based_low_seed42.jsonl"
-))
-
-validate_pair(fixed_records, rule_records)
-print("Pair validation passed")
-"""
 
 def calculate_metrics(records):
     queues = []
@@ -121,6 +108,13 @@ else:
 """
 
 def main():
+    parser.add_argument(
+        "--map",
+        dest="map_name",
+        choices=["simple_intersection", "o_cho_dua", "bigc_thang_long"],
+        default="simple_intersection",
+    )
+
     parser = argparse.ArgumentParser(
         description="Compare fixed-time and rule-based logs."
     )
@@ -149,10 +143,10 @@ def main():
         print(f"\nScenario: {scenario}")
 
         fixed_path = (
-            CONTROLLERS["fixed_time"] / f"seed{args.seed}" / f"fixed_time_{scenario}_seed{args.seed}.jsonl"
+            CONTROLLERS["fixed_time"] / args.map_name / f"seed{args.seed}" / f"fixed_time_{scenario}_seed{args.seed}.jsonl"
         )
         rule_path = (
-            CONTROLLERS["rule_based"] / f"seed{args.seed}" / f"rule_based_{scenario}_seed{args.seed}.jsonl"
+            CONTROLLERS["rule_based"] / args.map_name / f"seed{args.seed}" / f"rule_based_{scenario}_seed{args.seed}.jsonl"
         )
 
         fixed_records = normalize_records(load_log(fixed_path))
@@ -178,6 +172,7 @@ def main():
                 print(f"{metric}: reduction = {reduction:.2f}%")
 
             results.append({
+                "map": args.map_name,
                 "scenario": scenario,
                 "seed": args.seed,
                 "metric": metric,
@@ -190,7 +185,7 @@ def main():
         
     print("No. comparision results:", len(results))
 
-    output_dir = ROOT / "results" / f"seed{args.seed}"
+    output_dir = ROOT / "results" / args.map_name / f"seed{args.seed}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.scenario is None:

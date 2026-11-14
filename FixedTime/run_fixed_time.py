@@ -25,9 +25,15 @@ parser.add_argument(
     required=True,
 )
 
+parser.add_argument(
+    "--map",
+    dest="map_name",
+    choices=["simple_intersection", "o_cho_dua", "bigc_thang_long"],
+    default="simple_intersection",
+)
 args = parser.parse_args()
 
-log_dir = ROOT / "FixedTime" / "logs" / f"seed{args.seed}"
+log_dir = ROOT / "FixedTime" / "logs" / args.map_name / f"seed{args.seed}"
 log_dir.mkdir(parents=True, exist_ok=True)
 
 settings = load_settings()
