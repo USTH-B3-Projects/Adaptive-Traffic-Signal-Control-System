@@ -34,8 +34,7 @@ Reduction (%) = (Fixed-Time - Rule-Based) / Fixed-Time × 100
 
 A positive reduction means a lower value under Rule-Based. For these four metrics, lower values are preferable, assuming consistent measurement definitions.
 
-## 4. Results — Initial Test (Seed 42)
-Replace TBD with values from baseline_comparison_seed42.jsonl. Round mean values and percentages to two decimal places; integer maxima can remain integers where applicable.
+## 4. Results — Initial Test (Seed 57)
 ### 4.1. Low Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|

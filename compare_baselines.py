@@ -26,22 +26,25 @@ def load_log(file_path):
     return records
 
 def normalize_records(records):
+    if not records:
+        raise ValueError("Empty log")
+
     normalized = []
 
     for record in records:
-        time = record["simulation_time"]
-        queue_ns = record["queues"]["NS"]
-        queue_ew = record["queues"]["EW"]
-        total_queue = queue_ew + queue_ns
-        total_waiting_time = record["total_waiting_time"]
+        if "total_queue" in record:
+            total_queue = record["total_queue"]
+        else:
+            total_queue = (
+                record["queues"]["NS"] + record["queues"]["EW"]
+            )
 
         normalized.append({
-            "time": time,
-            "queue_ns": queue_ns,
-            "queue_ew": queue_ew,
+            "time": record["simulation_time"],
             "total_queue": total_queue,
-            "total_waiting_time": total_waiting_time,
+            "total_waiting_time": record["total_waiting_time"],
         })
+
     return normalized
 
 """# Test func
@@ -108,22 +111,22 @@ else:
 """
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Summarize FT or compare FT and RB logs."
+    )
+
     parser.add_argument(
         "--map",
         dest="map_name",
-        choices=["simple_intersection", "o_cho_dua", "bigc_thang_long"],
+        choices=[
+            "simple_intersection",
+            "o_cho_dua",
+            "bigc_thang_long",
+        ],
         default="simple_intersection",
     )
 
-    parser = argparse.ArgumentParser(
-        description="Compare fixed-time and rule-based logs."
-    )
-
-    parser.add_argument(
-        "--seed",
-        type=int,
-        required=True,
-    )
+    parser.add_argument("--seed", type=int, required=True)
 
     parser.add_argument(
         "--scenario",
@@ -131,10 +134,32 @@ def main():
         default=None,
     )
 
+    parser.add_argument(
+        "--ft-only",
+        action="store_true",
+        help="Summarize fixed-time logs without requiring RB logs.",
+    )
+
     args = parser.parse_args()
 
+    available_scenarios = (
+    ["high", "imbalance"]
+    if args.map_name == "o_cho_dua"
+    else SCENARIOS
+    )
+
+    if (
+        args.scenario is not None
+        and args.scenario not in available_scenarios
+    ):
+        parser.error(
+            f"{args.map_name} supports: {available_scenarios}"
+        )
+
     selected_scenarios = (
-        [args.scenario] if args.scenario is not None else SCENARIOS
+        [args.scenario]
+        if args.scenario is not None
+        else available_scenarios
     )
 
     results = []
@@ -150,11 +175,30 @@ def main():
         )
 
         fixed_records = normalize_records(load_log(fixed_path))
+        fixed_metrics = calculate_metrics(fixed_records)
+
+        if args.ft_only:
+            print("Fixed-time:", fixed_metrics)
+
+            for metric, value in fixed_metrics.items():
+                results.append({
+                    "map": args.map_name,
+                    "scenario": scenario,
+                    "seed": args.seed,
+                    "controller": "fixed_time",
+                    "metric": metric,
+                    "value": value,
+                    "sample_count": len(fixed_records),
+                    "first_sample_time": fixed_records[0]["time"],
+                    "last_sample_time": fixed_records[-1]["time"],
+                })
+
+            continue
+
         rule_records = normalize_records(load_log(rule_path))
 
         validate_pair(fixed_records, rule_records)
 
-        fixed_metrics = calculate_metrics(fixed_records)
         rule_metrics = calculate_metrics(rule_records)
 
         print("Fixed-time: ", fixed_metrics)
@@ -188,11 +232,17 @@ def main():
     output_dir = ROOT / "results" / args.map_name / f"seed{args.seed}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    prefix = (
+        "fixed_time_summary"
+        if args.ft_only
+        else "baseline_comparison"
+    )
+
     if args.scenario is None:
-        output_name = f"baseline_comparison_seed{args.seed}.jsonl"
+        output_name = f"{prefix}_seed{args.seed}.jsonl"
     else:
         output_name = (
-            f"baseline_comparison_{args.scenario}_seed{args.seed}.jsonl"
+            f"{prefix}_{args.scenario}_seed{args.seed}.jsonl"
         )
     output_path = output_dir / output_name
 
