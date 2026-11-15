@@ -15,6 +15,7 @@ class Environment:
                  settings: dict | None = None,
                  tls_ids=None,
                  green_phases_by_tls=None,
+                 stop_on_empty=True,
                 ):
         self.settings = validate_settings(load_settings(config_path) | (settings or {}))
         self.loader = ScenarioLoader(scenarios_path)
@@ -23,6 +24,7 @@ class Environment:
         self._done = True
         self.tls_ids = tls_ids
         self.green_phases_by_tls = green_phases_by_tls
+        self.stop_on_empty = stop_on_empty
 
     @property
     def connection(self):
@@ -87,7 +89,10 @@ class Environment:
             if self._end is not None:
                 deadline = min(deadline, self._end)
             automatic = []
-            terminated = self.connection.simulation.getMinExpectedNumber() == 0
+            terminated = (
+                self.stop_on_empty
+                and self.connection.simulation.getMinExpectedNumber() == 0
+            )
             truncated = False
             while not terminated and now < deadline - 1e-8:
                 self.connection.simulationStep()
@@ -98,7 +103,10 @@ class Environment:
                         decisions[event["tls_id"]].update(
                             executed_action="SWITCH", override_reason="max_green")
                 automatic.extend(events)
-                terminated = self.connection.simulation.getMinExpectedNumber() == 0
+                terminated = (
+                    self.stop_on_empty
+                    and self.connection.simulation.getMinExpectedNumber() == 0
+                )
                 truncated = not terminated and self._end is not None and now >= self._end - 1e-8
                 if terminated or truncated:
                     break

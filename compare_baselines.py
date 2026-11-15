@@ -134,10 +134,18 @@ def main():
         default=None,
     )
 
-    parser.add_argument(
+    summary_group = parser.add_mutually_exclusive_group()
+
+    summary_group.add_argument(
         "--ft-only",
         action="store_true",
-        help="Summarize fixed-time logs without requiring RB logs.",
+        help="Summarize fixed-time logs only.",
+    )
+
+    summary_group.add_argument(
+        "--rb-only",
+        action="store_true",
+        help="Summarize rule-based logs only.",
     )
 
     args = parser.parse_args()
@@ -174,26 +182,34 @@ def main():
             CONTROLLERS["rule_based"] / args.map_name / f"seed{args.seed}" / f"rule_based_{scenario}_seed{args.seed}.jsonl"
         )
 
-        fixed_records = normalize_records(load_log(fixed_path))
-        fixed_metrics = calculate_metrics(fixed_records)
+        if args.ft_only or args.rb_only:
+            controller = (
+                "fixed_time" if args.ft_only else "rule_based"
+            )
+            log_path = fixed_path if args.ft_only else rule_path
 
-        if args.ft_only:
-            print("Fixed-time:", fixed_metrics)
+            records = normalize_records(load_log(log_path))
+            metrics = calculate_metrics(records)
 
-            for metric, value in fixed_metrics.items():
+            print(f"{controller}:", metrics)
+
+            for metric, value in metrics.items():
                 results.append({
                     "map": args.map_name,
                     "scenario": scenario,
                     "seed": args.seed,
-                    "controller": "fixed_time",
+                    "controller": controller,
                     "metric": metric,
                     "value": value,
-                    "sample_count": len(fixed_records),
-                    "first_sample_time": fixed_records[0]["time"],
-                    "last_sample_time": fixed_records[-1]["time"],
+                    "sample_count": len(records),
+                    "first_sample_time": records[0]["time"],
+                    "last_sample_time": records[-1]["time"],
                 })
 
             continue
+
+        fixed_records = normalize_records(load_log(fixed_path))
+        fixed_metrics = calculate_metrics(fixed_records)
 
         rule_records = normalize_records(load_log(rule_path))
 
@@ -232,11 +248,12 @@ def main():
     output_dir = ROOT / "results" / args.map_name / f"seed{args.seed}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    prefix = (
-        "fixed_time_summary"
-        if args.ft_only
-        else "baseline_comparison"
-    )
+    if args.ft_only:
+        prefix = "fixed_time_summary"
+    elif args.rb_only:
+        prefix = "rule_based_summary"
+    else:
+        prefix = "baseline_comparison"
 
     if args.scenario is None:
         output_name = f"{prefix}_seed{args.seed}.jsonl"
