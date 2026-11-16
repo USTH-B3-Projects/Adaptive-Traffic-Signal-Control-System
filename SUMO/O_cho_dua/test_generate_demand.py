@@ -43,6 +43,30 @@ class DemandProfileTests(unittest.TestCase):
             for weight in weights.values():
                 self.assertAlmostEqual(weight, .25)
 
+    def test_generated_low_defaults(self):
+        for scenario, rate in [('low', 1200)]:
+            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                shutil.copytree(demand.ROOT / 'config', root / 'config')
+                args = argparse.Namespace(rate=None, duration=None, seed=42,
+                                          output=None, motorcycle_share=.8)
+                with patch.object(demand, 'ROOT', root):
+                    demand.generate(scenario, args)
+                directory = root / 'scenarios' / scenario.capitalize()
+                flows = ET.parse(directory / 'traffic.rou.xml').findall('flow')
+                self.assertEqual(len(flows), 120 * 12)
+                self.assertEqual(min(float(f.get('begin')) for f in flows), 0)
+                self.assertEqual(max(float(f.get('end')) for f in flows), 3600)
+                for name in demand.APPROACHES:
+                    expected = sum(float(f.get('probability')) *
+                                   (float(f.get('end')) - float(f.get('begin')))
+                                   for f in flows if f.get('id').startswith(name + '_'))
+                    self.assertAlmostEqual(expected, rate / 4)
+                config = ET.parse(directory / 'simulation.sumocfg')
+                self.assertTrue((directory / config.find('input/route-files').get('value')).is_file())
+                self.assertTrue((directory / 'demand_profile.csv').is_file())
+                self.assertTrue((directory / 'output.add.xml').is_file())
+
     def test_imbalance_covers_three_hours_and_preserves_total(self):
         profile = demand.make_profile('imbalance', 4200, 10800, 42)
         self.assertEqual(len(profile), 360)
