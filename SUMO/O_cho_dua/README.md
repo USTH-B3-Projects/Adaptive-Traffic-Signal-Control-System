@@ -1,6 +1,6 @@
 # O Cho Dua map
 
-The O Cho Dua map is independent of `Map_Nga_tu`. All three scenarios share the existing network, signal programs, vehicle behavior and boundary-to-boundary routes through the study junction.
+The O Cho Dua map is independent of `Map_Nga_tu`. All four scenarios share the existing network, signal programs, vehicle behavior and boundary-to-boundary routes through the study junction.
 
 ## Layout
 
@@ -15,6 +15,7 @@ O_cho_dua/
     output.add.xml          Edge measurements
   scenarios/
     Low/                    Scenario inputs and Low.bat launcher
+    Medium/                 Scenario inputs and Medium.bat launcher
     High/
       simulation.sumocfg
       traffic.rou.xml
@@ -36,7 +37,7 @@ O_cho_dua/
 
 Do not replace `network/osm.fixed.net.xml` with the original network in `source/`: their signal programs differ. The source files are retained for reproduction, not loaded by any scenario.
 
-Double-click `scenarios/Low/Low.bat`, `scenarios/High/High.bat` or `scenarios/Imbalance/Imbalance.bat` to launch the existing scenario inputs directly, without regenerating demand. These launchers require SUMO GUI on `PATH` and create the default seed42 output folder if needed.
+Double-click `scenarios/Low/Low.bat`, `scenarios/Medium/Medium.bat`, `scenarios/High/High.bat` or `scenarios/Imbalance/Imbalance.bat` to launch the existing scenario inputs directly, without regenerating demand. These launchers require SUMO GUI on `PATH` and create the default seed42 output folder if needed.
 
 ## Build and run
 
@@ -48,12 +49,13 @@ From PowerShell in this directory:
 $env:SUMO_HOME = "D:\Sumo"
 .\build.bat
 .\run.bat Low 42
+.\run.bat Medium 42
 .\run.bat High 42
 .\run.bat Imbalance 42
 python -B -m unittest test_generate_demand -v
 ```
 
-`build.bat` generates all three scenarios by default, using seed 42. `run.bat` defaults to `High` and seed 42 and regenerates that scenario with default rate/duration before launching. To run custom generated inputs, use the headless command below or `sumo-gui -c scenarios/High/simulation.sumocfg --start` directly. The launchers work from other directories. Close SUMO GUI to finish a run; reload the configuration after rebuilding demand.
+`build.bat` generates all four scenarios by default, using seed 42. `run.bat` defaults to `High` and seed 42 and regenerates that scenario with default rate/duration before launching. To run custom generated inputs, use the headless command below or `sumo-gui -c scenarios/High/simulation.sumocfg --start` directly. The launchers work from other directories. Close SUMO GUI to finish a run; reload the configuration after rebuilding demand.
 
 ```powershell
 .\build.bat --scenario imbalance --seed 57
@@ -61,7 +63,7 @@ python -B -m unittest test_generate_demand -v
 .\build.bat --scenario high --motorcycle-share 0.85 --output comparison.rou.xml
 ```
 
-`--scenario` accepts `low`, `high`, `imbalance`, or `all`. `--rate` overrides total vehicles/hour; `--duration` overrides the demand generation period in seconds. `--output` writes a custom route file for one scenario. Building normally replaces the selected generated scenario inputs. Save custom inputs before rebuilding.
+`--scenario` accepts `low`, `medium`, `high`, `imbalance`, or `all`. `--rate` overrides total vehicles/hour; `--duration` overrides the demand generation period in seconds. `--output` writes a custom route file for one scenario. Building normally replaces the selected generated scenario inputs. Save custom inputs before rebuilding.
 
 For a headless run:
 
@@ -74,14 +76,14 @@ Use `run.bat` to select the output directory for a scenario and seed. Results ar
 
 ## Scenarios
 
-| Parameter | Low | High | Imbalance |
-|---|---|---|---|
-| Demand generation period | 0-3600 s | 0-3600 s | 0-10800 s (3 hours) |
-| Total demand | 1200 vehicles/hour | 5400 vehicles/hour | 4200 vehicles/hour |
-| Approach distribution | Constant 25% each | Constant 25% each | Smoothly changing dominant approach |
-| Purpose | Light balanced load | Sustained balanced high load | Adaptation as the busiest approach changes |
+| Parameter | Low | Medium | High | Imbalance |
+|---|---|---|---|---|
+| Demand generation period | 0-3600 s | 0-3600 s | 0-3600 s | 0-10800 s (3 hours) |
+| Total demand | 1200 vehicles/hour | 3000 vehicles/hour | 5400 vehicles/hour | 4200 vehicles/hour |
+| Approach distribution | Constant 25% each | Constant 25% each | Constant 25% each | Smoothly changing dominant approach |
+| Purpose | Light balanced load | Moderate balanced load | Sustained balanced high load | Adaptation as the busiest approach changes |
 
-Low matches `Map_Nga_tu` at 1200 vehicles/hour (300 per approach), over one hour. It retains the same vehicle mix and turning proportions as High.
+Low and Medium match `Map_Nga_tu` at 1200 and 3000 vehicles/hour respectively (300 and 750 per approach), over one hour. They retain the same vehicle mix and turning proportions as High.
 
 High uses the same total demand, per-approach demand (1350 vehicles/hour), and duration as `Map_Nga_tu` High. It retains O Cho Dua's own turning proportions and vehicle/lane behavior.
 
@@ -132,6 +134,6 @@ Six unit/integration tests passed. Network and scenery SHA-256 hashes match the 
 
 Diagnostic logs and summaries are under `output/<scenario>/seed42/`. The network and vehicle behavior were retained; these results expose traffic-model limitations rather than certify collision-free operation. Neither a complete 3-hour episode nor final clearance nor GUI appearance was verified. Demand profiles, including all 3 hours, were checked by automated tests.
 
-### Low verification (2026-11-16)
+### Low/Medium verification (2026-11-16)
 
-All seven generator tests passed. Low ran with SUMO 1.27.1, seed 42 and XML validation to 60 seconds with exit code 0. This checks loading and startup only; full one-hour episodes and GUI appearance were not verified.
+All seven generator tests passed. Both new scenarios ran with SUMO 1.27.1, seed 42 and XML validation to 60 seconds with exit code 0. This checks loading and startup only; full one-hour episodes and GUI appearance were not verified.

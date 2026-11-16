@@ -43,8 +43,8 @@ class DemandProfileTests(unittest.TestCase):
             for weight in weights.values():
                 self.assertAlmostEqual(weight, .25)
 
-    def test_generated_low_defaults(self):
-        for scenario, rate in [('low', 1200)]:
+    def test_generated_low_and_medium_defaults(self):
+        for scenario, rate in [('low', 1200), ('medium', 3000)]:
             with self.subTest(scenario=scenario), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
                 shutil.copytree(demand.ROOT / 'config', root / 'config')
