@@ -21,7 +21,7 @@ def load_log(path: Path):
                 records.append(json.loads(line))
     return records
 
-def total_queue(record) ->float:
+def total_queue(record) -> float:
     if record.get("queues_total") is not None:
         return float(record["queues_total"])
     q = record.get("queues") or {}
@@ -58,12 +58,10 @@ def metrics(records):
         "max_total_waiting_time": max(ws),
     }
 
-
 def reduction(base, cand):
     if base == 0:
         return None
     return (base - cand) / base * 100.0
-
 
 def compare_one(scenario: str, seed: int):
     fixed_path = (
@@ -107,7 +105,6 @@ def compare_one(scenario: str, seed: int):
             "reduction_percent": red,
         })
     return rows
-
 
 def main():
     parser = argparse.ArgumentParser(description="Compare FT vs RB on O Cho Dua")
