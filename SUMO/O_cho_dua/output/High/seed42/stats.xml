@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-11-15T22:57:00.672248+07:00 by Eclipse SUMO sumo 1.28.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\../../network/osm.fixed.net.xml"/>
+        <route-files value="C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\traffic.rou.xml"/>
+        <additional-files value="C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\../../network/osm.poly.xml.gz,C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\output.add.xml"/>
+    </input>
+
+    <output>
+        <tripinfo-output value="C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\../../output/High/seed42/tripinfos.xml"/>
+        <statistic-output value="C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\../../output/High/seed42/stats.xml"/>
+    </output>
+
+    <time>
+        <step-length value="0.1"/>
+    </time>
+
+    <processing>
+        <lateral-resolution value="0.4"/>
+        <tls.actuated.jam-threshold value="30"/>
+    </processing>
+
+    <routing>
+        <device.rerouting.adaptation-steps value="18"/>
+        <device.rerouting.adaptation-interval value="10"/>
+    </routing>
+
+    <report>
+        <verbose value="true"/>
+        <duration-log.statistics value="true"/>
+        <no-step-log value="true"/>
+    </report>
+
+    <traci_server>
+        <remote-port value="60273"/>
+    </traci_server>
+
+    <random_number>
+        <seed value="57"/>
+    </random_number>
+
+    <gui_only>
+        <gui-settings-file value="C:\USTH B3\Adaptive-Traffic-Signal-Control-System\SUMO\O_cho_dua\scenarios\High\../../config/osm.view.xml"/>
+    </gui_only>
+
+</sumoConfiguration>
+-->
+
+<statistics xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/statistic_file.xsd">
+    <performance clockBegin="145860.26" clockEnd="146514.31" clockDuration="654.05" traciDuration="38.79" realTimeFactor="5.50" vehicleUpdatesPerSecond="30492.71" personUpdatesPerSecond="0.00" begin="0.00" end="3600.00" duration="3600.00"/>
+    <vehicles loaded="5358" inserted="4119" running="662" waiting="1239"/>
+    <teleports total="104" jam="87" yield="15" wrongLane="0"/>
+    <safety collisions="2" emergencyStops="1" emergencyBraking="67"/>
+    <persons loaded="0" running="0" jammed="0"/>
+    <personTeleports total="0" abortWait="0" wrongDest="0"/>
+    <vehicleTripStatistics count="3457" routeLength="1109.74" speed="5.79" duration="322.34" waitingTime="195.51" timeLoss="241.00" departDelay="26.92" departDelayWaiting="-1.00" totalTravelTime="1114330.30" totalDepartDelay="93074.90"/>
+    <pedestrianStatistics number="0" routeLength="0.00" duration="0.00" timeLoss="0.00"/>
+    <rideStatistics number="0"/>
+    <transportStatistics number="0"/>
+</statistics>

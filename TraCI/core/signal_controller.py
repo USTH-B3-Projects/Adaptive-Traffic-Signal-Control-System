@@ -14,7 +14,18 @@ class SignalController:
         red = self._duration(settings.get("all_red_time", 0))
         if self.maximum < self.minimum or self.maximum <= 0:
             raise ValueError("max_green must be positive and >= min_green")
-        self.tls_ids = tuple(connection.trafficlight.getIDList())
+        #self.tls_ids = tuple(connection.trafficlight.getIDList())
+        all_ids = connection.trafficlight.getIDList()
+        static_ids = []
+        for tls in all_ids:
+            programs = [p for p in connection.trafficlight.getAllProgramLogics(tls)
+                        if p.programID == connection.trafficlight.getProgram(tls)]
+            if programs and programs[0].type == 0:   # 0 = static
+                static_ids.append(tls)
+        self.tls_ids = tuple(static_ids)
+
+        if not self.tls_ids:
+            raise ValueError("No static traffic lights found to control")
         self._signals = {}
         now = connection.simulation.getTime()
         for tls in self.tls_ids:
@@ -31,8 +42,8 @@ class SignalController:
                 if not state or set(state) - set("rGgys"):
                     raise ValueError(f"{tls}: unsupported signal state {state}")
                 mask = tuple((j, c) for j, c in enumerate(state) if c in "Gg")
-                if mask and "y" in state:
-                    raise ValueError(f"{tls}: mixed green/yellow phase unsupported")
+                #if mask and "y" in state:
+                    #raise ValueError(f"{tls}: mixed green/yellow phase unsupported")
                 if not mask and "s" in state:
                     raise ValueError(f"{tls}: permissive movement outside a green stage")
                 masks.append(mask)

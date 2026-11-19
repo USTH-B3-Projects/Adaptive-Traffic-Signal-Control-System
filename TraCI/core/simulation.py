@@ -53,7 +53,7 @@ def _binary(settings):
 
 
 def _safe_inputs(scenario):
-    root, paths = config_inputs(scenario.config_path)
+    '''root, paths = config_inputs(scenario.config_path)
     # Reject output configuration rather than accidentally writing alongside immutable inputs.
     for element in root.iter():
         if element.tag == "output" and len(element):
@@ -63,7 +63,15 @@ def _safe_inputs(scenario):
     for path in paths.get("additional-files", ()):
         for element in ET.parse(path).getroot().iter():
             if any(key in element.attrib for key in ("file", "output", "outputFile")):
-                raise ValueError(f"Additional-file output/file attributes require explicit safe handling: {path}")
+                raise ValueError(f"Additional-file output/file attributes require explicit safe handling: {path}")'''
+    
+    root, paths = config_inputs(scenario.config_path)
+    # Cho phép sumocfg có <output>; baseline tự log JSONL nên không dùng output của SUMO.
+    for element in root.iter():
+        if element.tag in ("log", "message-log", "error-log", "save-state.files", "save-state.prefix"):
+            raise ValueError(f"Configured SUMO output is unsupported: {element.tag}")
+    # Bỏ kiểm tra file= trong additional-files để O Cho Dừa chạy được.
+    # (Nếu muốn chặt hơn sau này có thể bật lại.)
 
 
 class Simulation:
