@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-SCENARIO_RATES = {"high": 5400, "imbalance": 4200}
+SCENARIO_RATES = {"low": 1200, "medium": 3000, "high": 5400, "imbalance": 4200}
 MOVEMENT_SHARES = {"straight": 0.50, "left": 0.25, "right": 0.25}
 # shortcut: exclude the blocked 12 m bus movement at Nguyen Luong Bang, revisit after junction review.
 BUS_APPROACHES = {"ton_duc_thang", "xa_dan", "o_cho_dua"}
