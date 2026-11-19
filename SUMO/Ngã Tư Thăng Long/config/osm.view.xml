@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<viewsettings>
+    <scheme name="real world">
+        <edges showSublanes="0" laneShowBorders="1" hideConnectors="1" />
+        <junctions showLane2Lane="0" drawShape="1" />
+        <vehicles vehicleMode="0" vehicleQuality="2" vehicle_exaggeration="1" vehicle_minSize="0" showBlinker="1" />
+    </scheme>
+    <delay value="20" />
+</viewsettings>
