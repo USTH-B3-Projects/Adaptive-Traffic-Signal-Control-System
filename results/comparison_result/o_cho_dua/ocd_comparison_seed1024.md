@@ -17,8 +17,8 @@ Evaluate the performance of two baseline controllers under the same traffic scen
 | Simulator | SUMO 1.28.0 |
 | Network | O Cho Dua |
 | Controllers | Fixed-Time; Rule-Based |
-| Scenarios | High; Imbalance |
-| Simulation duration | 3600 s; 10800 s (confirm from run configuration) |
+| Scenarios | Low; Medium; High; Imbalance |
+| Simulation duration | 3600s; 3600s; 3600 s; 10800 s (confirm from run configuration) |
 | Initial random seed | 1024 |
 | Data source | `ocd_comparison_seed1024.jsonl` |
 
@@ -38,18 +38,34 @@ A positive reduction means a lower value under Rule-Based. For these four metric
 
 ## 4. Results (Seed 1024)
 
+### 4.1. Low Traffic
+| Metric | Fixed-Time | Rule-Based | Reduction (%) |
+|---|---:|---:|---:|
+| `mean_queue` (vehicles) | 18.33 | 19.26 | -5.09% |
+| `max_queue` (vehicles) | 35.0 | 42.0 | -20.00% |
+| `mean_total_waiting_time` (s) | 758.27 | 838.14 | -10.53% |
+| `max_total_waiting_time` (s) | 1918.1 | 2114.0 | -10.21% |
+
+### 4.2. Medium Traffic
+| Metric | Fixed-Time | Rule-Based | Reduction (%) |
+|---|---:|---:|---:|
+| `mean_queue` (vehicles) | 39.76 | 41.13 | -3.46% |
+| `max_queue` (vehicles) | 83.0 | 89.0 | -7.23% |
+| `mean_total_waiting_time` (s) | 2115.83 | 2425.84 | -14.65% |
+| `max_total_waiting_time` (s) | 5147.8 | 7020.1 | -36.37% |
+
 ### 4.3. High Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 78.3625 | 96.92 | -23.68% |
-| `max_queue` (vehicles) | 167 | 178 | -6.59% |
-| `mean_total_waiting_time` (s) | 4207.47 | 6247.88 | -48.49% |
-| `max_total_waiting_time` (s) | 10477.6 | 23363.2 | -122.98% |
+| `mean_queue` (vehicles) | 91.89 | 93.30 | -1.53% |
+| `max_queue` (vehicles) | 160.0 | 172.0 | -7.50% |
+| `mean_total_waiting_time` (s) | 5221.52 | 5649.13 | -8.19% |
+| `max_total_waiting_time` (s) | 13648.10 | 12555.4 | 8.01% |
 
 ### 4.4. Imbalanced Traffic
 | Metric | Fixed-Time | Rule-Based | Reduction (%) |
 |---|---:|---:|---:|
-| `mean_queue` (vehicles) | 70.24 | 76.21 | -8.5% |
-| `max_queue` (vehicles) | 157 | 170 | -8.28% |
-| `mean_total_waiting_time` (s) | 3940.18 | 4848.19 | -23.04% |
-| `max_total_waiting_time` (s) | 12492.6 | 13267.2 | -6.2% |
+| `mean_queue` (vehicles) | 72.87 | 74.19 | -1.81% |
+| `max_queue` (vehicles) | 170.0 | 182.0 | -7.06% |
+| `mean_total_waiting_time` (s) | 3940.18 | 4848.19 | -7.47% |
+| `max_total_waiting_time` (s) | 12751.6 | 12491.2 | 2.04% |

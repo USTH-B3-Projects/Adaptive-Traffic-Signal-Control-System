@@ -121,9 +121,9 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if args.scenario:
-        out_name = f"baseline_comparison_{args.scenario}_seed{args.seed}.jsonl"
+        out_name = f"ocd_comparison_{args.scenario}_seed{args.seed}.jsonl"
     else:
-        out_name = f"baseline_comparison_seed{args.seed}.jsonl"
+        out_name = f"ocd_comparison_seed{args.seed}.jsonl"
     out_path = out_dir / out_name
 
     with open(out_path, "w", encoding="utf-8") as f:
@@ -135,7 +135,7 @@ def main():
         for row in results:
             by_sc.setdefault(row["scenario"], []).append(row)
         for sc, rows in by_sc.items():
-            p = out_dir / f"baseline_comparison_{sc}_seed{args.seed}.jsonl"
+            p = out_dir / f"ocd_comparison_{sc}_seed{args.seed}.jsonl"
             with open(p, "w", encoding="utf-8") as f:
                 for row in rows:
                     f.write(json.dumps(row, ensure_ascii=False) + "\n")
