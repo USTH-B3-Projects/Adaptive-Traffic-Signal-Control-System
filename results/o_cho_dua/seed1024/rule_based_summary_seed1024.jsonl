@@ -1,8 +1,0 @@
-{"map": "o_cho_dua", "scenario": "high", "seed": 1024, "controller": "rule_based", "metric": "mean_queue", "value": 96.92222222222222, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "high", "seed": 1024, "controller": "rule_based", "metric": "max_queue", "value": 178, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "high", "seed": 1024, "controller": "rule_based", "metric": "mean_total_waiting_time", "value": 6247.879444444445, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "high", "seed": 1024, "controller": "rule_based", "metric": "max_total_waiting_time", "value": 23363.2, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 1024, "controller": "rule_based", "metric": "mean_queue", "value": 76.20601851851852, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 1024, "controller": "rule_based", "metric": "max_queue", "value": 170, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 1024, "controller": "rule_based", "metric": "mean_total_waiting_time", "value": 4848.18875, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 1024, "controller": "rule_based", "metric": "max_total_waiting_time", "value": 13267.2, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}

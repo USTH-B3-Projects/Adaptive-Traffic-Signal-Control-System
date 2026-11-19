@@ -1,8 +1,0 @@
-{"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "fixed_time", "metric": "mean_queue", "value": 80.12916666666666, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "fixed_time", "metric": "max_queue", "value": 169, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "fixed_time", "metric": "mean_total_waiting_time", "value": 4368.177222222223, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "fixed_time", "metric": "max_total_waiting_time", "value": 12990.2, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 57, "controller": "fixed_time", "metric": "mean_queue", "value": 69.28564814814816, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 57, "controller": "fixed_time", "metric": "max_queue", "value": 171, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 57, "controller": "fixed_time", "metric": "mean_total_waiting_time", "value": 4122.710648148148, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}
-{"map": "o_cho_dua", "scenario": "imbalance", "seed": 57, "controller": "fixed_time", "metric": "max_total_waiting_time", "value": 13278.699999999999, "sample_count": 2160, "first_sample_time": 0.0, "last_sample_time": 10795.0}

@@ -1,0 +1,4 @@
+{"scenario": "ocd_imbalance", "seed": 1024, "metric": "mean_queue", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 72.8662037037037, "candidate_value": 74.18796296296296, "reduction_percent": -1.813953783888523}
+{"scenario": "ocd_imbalance", "seed": 1024, "metric": "max_queue", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 170.0, "candidate_value": 182.0, "reduction_percent": -7.0588235294117645}
+{"scenario": "ocd_imbalance", "seed": 1024, "metric": "mean_total_waiting_time", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 4193.4260185185185, "candidate_value": 4506.740046296296, "reduction_percent": -7.471552529939879}
+{"scenario": "ocd_imbalance", "seed": 1024, "metric": "max_total_waiting_time", "baseline": "fixed_time", "candidate": "rule_based", "baseline_value": 12751.6, "candidate_value": 12491.2, "reduction_percent": 2.0420966780639263}
