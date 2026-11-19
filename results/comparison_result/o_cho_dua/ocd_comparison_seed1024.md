@@ -67,5 +67,5 @@ A positive reduction means a lower value under Rule-Based. For these four metric
 |---|---:|---:|---:|
 | `mean_queue` (vehicles) | 72.87 | 74.19 | -1.81% |
 | `max_queue` (vehicles) | 170.0 | 182.0 | -7.06% |
-| `mean_total_waiting_time` (s) | 3940.18 | 4848.19 | -7.47% |
+| `mean_total_waiting_time` (s) | 4193.43 | 4506.74 | -7.47% |
 | `max_total_waiting_time` (s) | 12751.6 | 12491.2 | 2.04% |
