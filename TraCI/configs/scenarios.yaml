@@ -3,5 +3,7 @@ medium: ../../SUMO/Map_Nga_tu/Map_Medium/simulation.sumocfg
 high: ../../SUMO/Map_Nga_tu/Map_High/simulation.sumocfg
 imbalance: ../../SUMO/Map_Nga_tu/Map_Imbalance/simulation.sumocfg
 
+ocd_low: ../../SUMO/O_cho_dua/scenarios/Low/simulation.sumocfg
+ocd_medium: ../../SUMO/O_cho_dua/scenarios/Medium/simulation.sumocfg
 ocd_high: ../../SUMO/O_cho_dua/scenarios/High/simulation.sumocfg
 ocd_imbalance: ../../SUMO/O_cho_dua/scenarios/Imbalance/simulation.sumocfg

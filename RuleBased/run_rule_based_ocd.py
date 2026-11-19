@@ -7,15 +7,23 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "TraCI"))
 
-from RuleBased.rule_based_controller_ocd import choose_action, get_total_queue
+from RuleBased.rule_based_controller_ocd import (
+    choose_action,
+    get_stage_queues,
+    get_current_stage,
+    get_total_queue,
+    MAIN_TLS,
+)
 from core.environment import Environment
 
 parser = argparse.ArgumentParser(description="Rule-based baseline on O Cho Dua")
-parser.add_argument("--scenario", choices=["ocd_high", "ocd_imbalance"], required=True)
+parser.add_argument("--scenario", choices=["ocd_low","ocd_medium","ocd_high", "ocd_imbalance"], required=True)
 parser.add_argument("--seed", type=int, required=True)
 args = parser.parse_args()
 
 END_TIME = {
+    "ocd_low": 3600,
+    "ocd_medium": 3600,
     "ocd_high": 3600,
     "ocd_imbalance": 10800,   
 }
@@ -40,15 +48,19 @@ with Environment(
 ) as env:
 
     state = env.reset(args.scenario, seed=args.seed)
-    tls_id = next(iter(state["tls"].keys()))
+    if MAIN_TLS in state["tls"]:
+        tls_id = MAIN_TLS
+    else:
+        tls_id = next(iter(state["tls"].keys()))
     print(f"Controlling TLS: {tls_id}")
-
+        
     with open(log_path, "w", encoding="utf-8") as log_file:
         step = 0
         while True:
             action = choose_action(state)
 
             tls = state["tls"][tls_id]
+            stage_queues = get_stage_queues(state)
             record = {
                 "scenario": state["scenario"],
                 "seed": args.seed,
@@ -56,8 +68,10 @@ with Environment(
                 "simulation_time": state["simulation_time"],
                 "tls_id": tls_id,
                 "phase_id": tls["phase_id"],
+                "stage": get_current_stage(state),
                 "green_elapsed": tls.get("green_elapsed"),
-                "queues": {"total": get_total_queue(state)},
+                "queues": stage_queues,
+                "queues_total": get_total_queue(state),
                 "total_waiting_time": tls["totals"].get("waiting_time"),
                 "chosen_action": action,
             }

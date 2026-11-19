@@ -10,10 +10,10 @@ from core.scenario_loader import ScenarioLoader, load_settings, validate_setting
 from core.simulation import Simulation
 
 parser = argparse.ArgumentParser(description="Fixed-time baseline on O Cho Dua")
-parser.add_argument("--scenario", choices=["ocd_high", "ocd_imbalance"], required=True)
+parser.add_argument("--scenario", choices=["ocd_low","ocd_medium","ocd_high", "ocd_imbalance"], required=True)
 parser.add_argument("--seed", type=int, required=True)
 args = parser.parse_args()
-END_TIME = {"ocd_high": 3600, "ocd_imbalance": 10800}
+END_TIME = {"ocd_low": 3600,"ocd_medium": 3600,"ocd_high": 3600, "ocd_imbalance": 10800}
 end_time = END_TIME[args.scenario]
 
 log_dir = ROOT / "FixedTime" / "logs_ochodua" / f"seed{args.seed}"
