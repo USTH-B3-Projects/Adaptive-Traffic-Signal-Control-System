@@ -12,7 +12,6 @@ CONTROLLERS = {
 
 SCENARIOS = ["ocd_low", "ocd_medium", "ocd_high", "ocd_imbalance"]
 
-
 def load_log(path: Path):
     records = []
     with open(path, "r", encoding="utf-8") as f:
@@ -22,7 +21,7 @@ def load_log(path: Path):
                 records.append(json.loads(line))
     return records
 
-def total_queue(record) -> float:
+def total_queue(record) ->float:
     if record.get("queues_total") is not None:
         return float(record["queues_total"])
     q = record.get("queues") or {}
