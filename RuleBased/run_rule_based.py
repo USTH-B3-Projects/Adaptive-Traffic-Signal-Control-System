@@ -57,8 +57,7 @@ if args.map_name == "simple_intersection":
         ROOT / "TraCI" / "configs"
         / "scenarios_simple_intersection.yaml"
     )
-    tls_id = "J"
-    green_phases = None
+    tls_ids = ["J"]
     green_profiles = None
 
 elif args.map_name == "o_cho_dua":
@@ -66,12 +65,26 @@ elif args.map_name == "o_cho_dua":
         ROOT / "TraCI" / "configs"
         / "scenarios_o_cho_dua.yaml"
     )
-    tls_id = (
+    tls_ids = [
         "joinedS_5707161152_6677677155_"
         "6677677160_6677677161_#2more"
+    ]
+    green_profiles = {tls_ids[0]: [0, 2, 5, 7]}
+
+elif args.map_name == "bigc_thang_long":
+    scenarios_path = (
+        ROOT / "TraCI" / "configs"
+        / "scenarios_bigc_thang_long.yaml"
     )
-    green_phases = [0, 2, 5, 7]
-    green_profiles = {tls_id: green_phases}
+    tls_ids = [
+        "1314185677",
+        "1314191420",
+        "4539674875",
+        "4539674879",
+    ]
+    green_profiles = {
+        tls_id: [0, 3] for tls_id in tls_ids
+    }
 
 else:
     parser.error("Map configuration is not ready yet.")
@@ -165,34 +178,38 @@ with Environment(
         "max_green": MAX_GREEN,
         "max_episode_seconds": args.duration,
     },
-    tls_ids=[tls_id],
+    tls_ids=tls_ids,
     green_phases_by_tls=green_profiles,
     stop_on_empty=False,
 ) as env:
 
     state = env.reset(args.scenario, seed=args.seed)
     
-    controller = None
+    controllers = {}
 
-    if args.map_name == "o_cho_dua":
-        phase_lanes = build_phase_lanes(
-            env.connection,
-            tls_id,
-            green_phases,
-        )
+    if green_profiles is not None:
+        for tls_id in tls_ids:
+            green_phases = green_profiles[tls_id]
 
-        controller = CyclicRuleBasedController(
-            tls_id=tls_id,
-            green_phases=green_phases,
-            phase_lanes=phase_lanes,
-            min_green=MIN_GREEN,
-            max_green=MAX_GREEN,
-        )
+            phase_lanes = build_phase_lanes(
+                env.connection,
+                tls_id,
+                green_phases,
+            )
 
-        print("Green phase order:", green_phases)
+            controllers[tls_id] = CyclicRuleBasedController(
+                tls_id=tls_id,
+                green_phases=green_phases,
+                phase_lanes=phase_lanes,
+                min_green=MIN_GREEN,
+                max_green=MAX_GREEN,
+            )
 
-        for phase_id, lanes in phase_lanes.items():
-            print(f"Phase {phase_id}: {lanes}")
+            print(f"\nTLS: {tls_id}")
+            print("Green phase order:", green_phases)
+
+            for phase_id, lanes in phase_lanes.items():
+                print(f"Phase {phase_id}: {lanes}")
 
     show_state(state)
 
@@ -219,60 +236,96 @@ with Environment(
         sample_count = 0
 
         while state["simulation_time"] < end_time - 1e-8:
-            tls = state["tls"][tls_id]
+            actions = {}
+            tls_records = {}
+            all_lane_data = {}
 
-            if controller is None:
-                # Original controller for the simple intersection.
-                action = choose_action(state)
-                phase_queues = None
-            else:
-                action = controller.choose_action(state)
-                phase_queues = controller.get_phase_queues(state)
+            # Choose an action independently for each TLS.
+            for tls_id in tls_ids:
+                tls = state["tls"][tls_id]
+                controller = controllers.get(tls_id)
 
-            lane_queues = {
+                if controller is None:
+                    action = choose_action(state)
+                    phase_queues = None
+                else:
+                    action = controller.choose_action(state)
+                    phase_queues = controller.get_phase_queues(state)
+
+                actions[tls_id] = action
+
+                lane_queues = {
+                    lane_id: data["halting_count"]
+                    for lane_id, data in tls["lanes"].items()
+                }
+
+                # Merge lanes by ID so each lane is counted once.
+                all_lane_data.update(tls["lanes"])
+
+                tls_record = {
+                    "program_id": (
+                        env.connection.trafficlight.getProgram(tls_id)
+                    ),
+                    "phase_id": tls["phase_id"],
+                    "phase_state": tls["phase_state"],
+                    "green_elapsed": tls["green_elapsed"],
+                    "in_transition": tls["in_transition"],
+                    "lane_queues": lane_queues,
+                    "total_queue": sum(lane_queues.values()),
+                    "total_waiting_time": tls["totals"]["waiting_time"],
+                    "chosen_action": action,
+                }
+
+                if controller is None:
+                    tls_record["queues"] = get_group_queues(state)
+                else:
+                    tls_record["phase_queues"] = phase_queues
+
+                tls_records[tls_id] = tls_record
+
+            all_lane_queues = {
                 lane_id: data["halting_count"]
-                for lane_id, data in tls["lanes"].items()
+                for lane_id, data in all_lane_data.items()
             }
 
-            # Record the observation BEFORE applying the action.
+            # Record the observation BEFORE applying the actions.
             record = {
                 "map": args.map_name,
                 "scenario": state["scenario"],
                 "seed": args.seed,
                 "controller": "rule_based",
                 "simulation_time": state["simulation_time"],
-                "tls_id": tls_id,
-                "program_id": (
-                    env.connection.trafficlight.getProgram(tls_id)
+                "tls_ids": tls_ids,
+                "tls": tls_records,
+                "lane_queues": all_lane_queues,
+                "total_queue": sum(all_lane_queues.values()),
+                "total_waiting_time": sum(
+                    data["waiting_time"]
+                    for data in all_lane_data.values()
                 ),
-                "phase_id": tls["phase_id"],
-                "phase_state": tls["phase_state"],
-                "green_elapsed": tls["green_elapsed"],
-                "in_transition": tls["in_transition"],
-                "lane_queues": lane_queues,
-                "total_queue": sum(lane_queues.values()),
-                "total_waiting_time": tls["totals"]["waiting_time"],
-                "chosen_action": action,
                 "min_green": MIN_GREEN,
                 "max_green": MAX_GREEN,
                 "decision_interval": 5,
             }
 
-            if controller is None:
-                record["queues"] = get_group_queues(state)
-            else:
-                record["phase_queues"] = phase_queues
+            next_state, terminated, truncated, info = env.step(actions)
 
-            next_state, terminated, truncated, info = env.step(action)
+            for tls_id in tls_ids:
+                tls_records[tls_id]["executed_action"] = (
+                    info["executed_action"][tls_id]
+                )
+                tls_records[tls_id]["override_reason"] = (
+                    info["override_reason"][tls_id]
+                )
 
-            record["executed_action"] = (
-                info["executed_action"][tls_id]
-            )
-            record["override_reason"] = (
-                info["override_reason"][tls_id]
-            )
             record["automatic_events"] = info["automatic_events"]
             record["next_time"] = next_state["simulation_time"]
+
+            # Preserve the previous format for single-TLS maps.
+            if len(tls_ids) == 1:
+                tls_id = tls_ids[0]
+                record["tls_id"] = tls_id
+                record.update(tls_records[tls_id])
 
             log_file.write(
                 json.dumps(record, ensure_ascii=False) + "\n"
@@ -282,16 +335,28 @@ with Environment(
             # Detailed output for short trial runs.
             if args.duration is not None:
                 print(
-                    f"t={record['simulation_time']:6.1f} | "
-                    f"phase={record['phase_id']} | "
-                    f"green={record['green_elapsed']:5.1f} | "
-                    f"queues={phase_queues} | "
-                    f"chosen={action} | "
-                    f"executed={record['executed_action']} | "
-                    f"reason={record['override_reason']} | "
-                    f"next_phase="
-                    f"{next_state['tls'][tls_id]['phase_id']}"
+                    f"\nt={record['simulation_time']:6.1f} | "
+                    f"total_queue={record['total_queue']} | "
+                    f"waiting={record['total_waiting_time']:.1f}"
                 )
+
+                for tls_id, tls_record in tls_records.items():
+                    queues = tls_record.get(
+                        "phase_queues",
+                        tls_record.get("queues"),
+                    )
+
+                    print(
+                        f"  TLS={tls_id} | "
+                        f"phase={tls_record['phase_id']} | "
+                        f"green={tls_record['green_elapsed']:5.1f} | "
+                        f"queues={queues} | "
+                        f"chosen={tls_record['chosen_action']} | "
+                        f"executed={tls_record['executed_action']} | "
+                        f"reason={tls_record['override_reason']} | "
+                        f"next_phase="
+                        f"{next_state['tls'][tls_id]['phase_id']}"
+                    )
 
                 for event in info["automatic_events"]:
                     print("  AUTO:", event)
