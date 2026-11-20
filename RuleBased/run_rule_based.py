@@ -62,9 +62,6 @@ if args.map_name == "simple_intersection":
     green_profiles = None
 
 elif args.map_name == "o_cho_dua":
-    if args.scenario not in ("high", "imbalance"):
-        parser.error("O Cho Dua only supports high and imbalance.")
-
     scenarios_path = (
         ROOT / "TraCI" / "configs"
         / "scenarios_o_cho_dua.yaml"

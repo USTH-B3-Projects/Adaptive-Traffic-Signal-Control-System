@@ -3,7 +3,26 @@ Run both controllers using the same list of seeds for each scenario. Aggregate m
 
 Seeds tested: 57, 367, 1024
 
-**Notation:** This is the VERSION 1 when adapting the original control principle from baseline simple intersection. Therefore it contains large limitations, which will be improved in VERSION 2.
+$$
+\text{Reduction}=
+\frac{\overline{FT}-\overline{RB}}{\overline{FT}}\times100\%
+$$
+
+### Low Traffic
+| Metric | FT (mean ± SD) | RB (mean ± SD) | Reduction |
+|---|---:|---:|---:|
+| `mean_queue` (vehicles) | 18.63 ± 0.58 | 18.81 ± 0.68 | −0.97% |
+| `max_queue` (vehicles) | 37.33 ± 2.08 | 40.67 ± 3.06 | −8.93% |
+| `mean_total_waiting_time` (s) | 769.97 ± 52.65 | 844.16 ± 34.91 | −9.64% |
+| `max_total_waiting_time` (s) | 2004.23 ± 68.03 | 2402.50 ± 394.19 | −19.87% |
+
+### Medium Traffic
+| Metric | FT (mean ± SD) | RB (mean ± SD) | Reduction |
+|---|---:|---:|---:|
+| `mean_queue` (vehicles) | 39.11 ± 0.70 | 41.57 ± 1.39 | −6.27% |
+| `max_queue` (vehicles) | 77.33 ± 1.15 | 87.00 ± 5.00 | −12.50% |
+| `mean_total_waiting_time` (s) | 1906.26 ± 67.94 | 2203.15 ± 192.10 | −15.57% |
+| `max_total_waiting_time` (s) | 5331.37 ± 353.31 | 5664.57 ± 1257.87 | −6.25% |
 
 ### High Traffic
 | Metric | FT (mean ± SD) | RB (mean ± SD) | Reduction |

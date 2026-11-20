@@ -150,11 +150,7 @@ def main():
 
     args = parser.parse_args()
 
-    available_scenarios = (
-    ["high", "imbalance"]
-    if args.map_name == "o_cho_dua"
-    else SCENARIOS
-    )
+    available_scenarios = SCENARIOS
 
     if (
         args.scenario is not None

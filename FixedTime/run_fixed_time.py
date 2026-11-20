@@ -64,8 +64,6 @@ if args.map_name not in scenario_files:
     parser.error("Map configuration is not ready yet.")
 
 if args.map_name != "simple_intersection":
-    if args.scenario not in ("high", "imbalance"):
-        parser.error("Complex maps only use high and imbalance.")
     if not args.tls_id:
         parser.error("--tls-id is required for complex maps.")
 

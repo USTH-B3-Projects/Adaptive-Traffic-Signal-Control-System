@@ -1,2 +1,4 @@
+low: ../../SUMO/O_cho_dua/scenarios/Low/traci.sumocfg
+medium: ../../SUMO/O_cho_dua/scenarios/Medium/traci.sumocfg
 high: ../../SUMO/O_cho_dua/scenarios/High/traci.sumocfg
 imbalance: ../../SUMO/O_cho_dua/scenarios/Imbalance/traci.sumocfg

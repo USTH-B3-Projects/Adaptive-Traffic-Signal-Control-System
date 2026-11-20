@@ -1,3 +1,11 @@
+{"map": "o_cho_dua", "scenario": "low", "seed": 57, "controller": "rule_based", "metric": "mean_queue", "value": 18.266666666666666, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "low", "seed": 57, "controller": "rule_based", "metric": "max_queue", "value": 40, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "low", "seed": 57, "controller": "rule_based", "metric": "mean_total_waiting_time", "value": 807.3011111111111, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "low", "seed": 57, "controller": "rule_based", "metric": "max_total_waiting_time", "value": 2161.5, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "medium", "seed": 57, "controller": "rule_based", "metric": "mean_queue", "value": 40.420833333333334, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "medium", "seed": 57, "controller": "rule_based", "metric": "max_queue", "value": 87, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "medium", "seed": 57, "controller": "rule_based", "metric": "mean_total_waiting_time", "value": 1983.7483333333332, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
+{"map": "o_cho_dua", "scenario": "medium", "seed": 57, "controller": "rule_based", "metric": "max_total_waiting_time", "value": 4215.4, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
 {"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "rule_based", "metric": "mean_queue", "value": 85.07083333333334, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
 {"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "rule_based", "metric": "max_queue", "value": 184, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
 {"map": "o_cho_dua", "scenario": "high", "seed": 57, "controller": "rule_based", "metric": "mean_total_waiting_time", "value": 5195.948888888889, "sample_count": 720, "first_sample_time": 0.0, "last_sample_time": 3595.0}
