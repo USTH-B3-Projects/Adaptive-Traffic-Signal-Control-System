@@ -164,8 +164,7 @@ def main():
 
             if len(programs) != 1 or programs[0].type != 0:
                 raise ValueError(
-                    f"{tls_id}: FT requires an active "
-                    "static program."
+                    f"{tls_id}: FT requires an active static program."
                 )
 
             lanes_by_tls[tls_id] = sorted({
