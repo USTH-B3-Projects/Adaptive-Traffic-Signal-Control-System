@@ -1,9 +1,12 @@
-# Python cache
+# Python & OS cache
 __pycache__/
 *.py[cod]
+.DS_Store
 
 # Checkpoint trung gian của Seed 100 (đã giữ best_model và ppo_seed100_final.zip)
 models/seed100/checkpoints/
 
-# Các file log mới chạy pipeline và console (không ảnh hưởng tới pipeline_seed107.log đã commit trước đó)
+# Các file log mới chạy pipeline và console và thư mục logs tạm thời (không ảnh hưởng tới pipeline_seed107.log đã commit trước đó)
+logs/
 *.log
+run_*.log
