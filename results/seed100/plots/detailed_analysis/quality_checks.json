@@ -1,0 +1,230 @@
+{
+  "status": "passed",
+  "reports": [
+    "results\\comparison_result\\drl_seed100_comprehensive_report_en.md",
+    "results\\comparison_result\\drl_seed100_comprehensive_report_vi.md"
+  ],
+  "report_lines": [
+    498,
+    498
+  ],
+  "markdown_tables": [
+    22,
+    22
+  ],
+  "csv_numeric_checks": 400,
+  "evaluation_episodes": 48,
+  "samples_per_episode": 720,
+  "tensorboard_scalar_tags": [
+    "rollout/ep_len_mean",
+    "eval/mean_ep_length",
+    "train/policy_gradient_loss",
+    "train/loss",
+    "rollout/ep_rew_mean",
+    "eval/mean_reward",
+    "time/fps",
+    "train/explained_variance",
+    "train/approx_kl",
+    "train/clip_fraction",
+    "train/entropy_loss",
+    "train/value_loss",
+    "train/learning_rate"
+  ],
+  "validation_episodes": 80,
+  "training_episodes": 836,
+  "best_model_step": 316800,
+  "existing_files_sha256_unchanged": 188,
+  "figures": [
+    {
+      "file": "01_learning_curves_reward_and_val.png",
+      "bytes": 390945,
+      "pixels": [
+        5100,
+        1740
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "c3543b577090f237e47a0ff95a433bae5b7215ef61f62c228ce1731d18d58547"
+    },
+    {
+      "file": "02_tensorboard_losses_and_diagnostics.png",
+      "bytes": 1192896,
+      "pixels": [
+        5400,
+        3900
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "8ed9abfe929ffdf9372020f5a0b19df38f8d3003a1aa79d8b8cda832e3f1432c"
+    },
+    {
+      "file": "03_action_decision_and_override_matrix.png",
+      "bytes": 562970,
+      "pixels": [
+        7500,
+        2220
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "84fddc10e039c575d245d54ec23b7a970ff4e12c965f8d30642d44634315d1fb"
+    },
+    {
+      "file": "04_timeseries_3600s_all_scenarios.png",
+      "bytes": 6803278,
+      "pixels": [
+        7200,
+        6000
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "1eb1547a1c3d5ca4e2112978304cecd07aa4be2bc5123f2584908aeb7cffef03"
+    },
+    {
+      "file": "05_per_seed_breakdown_101_102_103.png",
+      "bytes": 238669,
+      "pixels": [
+        4500,
+        3600
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "ea005dac8eda3d09a24dd72fa0330de4bcfddd4128c24b92b4e407d5b15164ff"
+    },
+    {
+      "file": "06_ppo_best_vs_final_stability.png",
+      "bytes": 444655,
+      "pixels": [
+        4800,
+        5400
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "137dfd36f989976d97697ef1ccf1af5a677c43d8f74748b4c99d8d0da2ea28fb"
+    },
+    {
+      "file": "07_v1_to_v2_progression_comparison.png",
+      "bytes": 421769,
+      "pixels": [
+        4800,
+        3600
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "2b69e97a82060fa12024d563b7b022e6670ac31a687dbd60f4ccf9ec568de043"
+    }
+  ],
+  "limitations": [
+    "Seed107 500k evaluation unavailable",
+    "Pure inference latency not instrumented",
+    "Unfinished green intervals are right-censored and excluded"
+  ],
+  "action_audit": {
+    "completed_episodes": 12,
+    "decision_records": 8640,
+    "exact_episode_metric_matches": 60,
+    "episode_metrics_checked": 60,
+    "exact_step_time_metric_matches": 51840,
+    "maximum_absolute_episode_difference": 0.0,
+    "decision_matrix_counts": [
+      [
+        3452,
+        0,
+        0,
+        89,
+        829
+      ],
+      [
+        0,
+        1427,
+        2157,
+        0,
+        686
+      ]
+    ],
+    "matrix_percent_denominator": "Each requested-action row",
+    "panel_b_scenario_counts": [
+      {
+        "scenario": "low",
+        "keep": 1296,
+        "switch": 432,
+        "noop": 432,
+        "denominator": 1728,
+        "keep_pct": 75.0,
+        "switch_pct": 25.0
+      },
+      {
+        "scenario": "medium",
+        "keep": 1296,
+        "switch": 432,
+        "noop": 432,
+        "denominator": 1728,
+        "keep_pct": 75.0,
+        "switch_pct": 25.0
+      },
+      {
+        "scenario": "high",
+        "keep": 1302,
+        "switch": 429,
+        "noop": 429,
+        "denominator": 1731,
+        "keep_pct": 75.21663778162912,
+        "switch_pct": 24.783362218370883
+      },
+      {
+        "scenario": "imbalance",
+        "keep": 1715,
+        "switch": 223,
+        "noop": 222,
+        "denominator": 1938,
+        "keep_pct": 88.49329205366357,
+        "switch_pct": 11.50670794633643
+      }
+    ],
+    "completed_green_intervals": 1516,
+    "green_min": 15.0,
+    "green_max": 75.0
+  },
+  "refresh": {
+    "figures_updated": [
+      "01_learning_curves_reward_and_val.png",
+      "02_tensorboard_losses_and_diagnostics.png",
+      "03_action_decision_and_override_matrix.png",
+      "04_timeseries_3600s_all_scenarios.png",
+      "07_v1_to_v2_progression_comparison.png"
+    ],
+    "figures_preserved_sha256": {
+      "05_per_seed_breakdown_101_102_103.png": "ea005dac8eda3d09a24dd72fa0330de4bcfddd4128c24b92b4e407d5b15164ff",
+      "06_ppo_best_vs_final_stability.png": "137dfd36f989976d97697ef1ccf1af5a677c43d8f74748b4c99d8d0da2ea28fb"
+    },
+    "validation_local_dip_step": 172800,
+    "validation_local_dip_value": -216.3954625,
+    "smoothing": "Trailing full 12-sample windows; t=60..3600; no data padding",
+    "protected_files_sha256_unchanged": 188,
+    "report_scope_checks": {
+      "drl_seed100_comprehensive_report_en.md": {
+        "before_outside_allowed_sha256": "82460861cd5bfe8d59f9f7e849b2387cc78684551d81a0d4d20bc0ca730cb71d",
+        "after_outside_allowed_sha256": "82460861cd5bfe8d59f9f7e849b2387cc78684551d81a0d4d20bc0ca730cb71d",
+        "scorecard_section_unchanged": true
+      },
+      "drl_seed100_comprehensive_report_vi.md": {
+        "before_outside_allowed_sha256": "ddd1787e72e84411695667beb71a563b976d02e0e23ac51d17a6325873b9b95e",
+        "after_outside_allowed_sha256": "ddd1787e72e84411695667beb71a563b976d02e0e23ac51d17a6325873b9b95e",
+        "scorecard_section_unchanged": true
+      }
+    }
+  }
+}

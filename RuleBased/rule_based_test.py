@@ -1,4 +1,8 @@
-from rule_based_controller import choose_action
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from RuleBased.rule_based_controller import choose_action
+from DRL.core.scenario_loader import load_settings
 
 state = {
     "tls": {
@@ -25,7 +29,7 @@ print("Action:", action)
 assert action == "SWITCH", f"Expected SWITCH, got {action}"
 print("Test 1 passed")
 
-state["tls"]["J"]["green_elapsed"] = 20
+state["tls"]["J"]["green_elapsed"] = load_settings()["min_green"] - 5
 action = choose_action(state)
 assert action == "KEEP", f"Expected KEEP, got {action}"
 print("Test 2 passed")

@@ -1,0 +1,26 @@
+{
+  "version": "V2",
+  "seed": 100,
+  "requested_timesteps": 600000,
+  "actual_timesteps": 601920,
+  "n_steps": 2880,
+  "expected_rollouts": 209,
+  "completed_training_episodes": 836,
+  "validation_seed": 999,
+  "held_out_seeds": [
+    101,
+    102,
+    103
+  ],
+  "gpu": "Quadro RTX 3000",
+  "observation_shape": [
+    12
+  ],
+  "training_seed_range": [
+    1000,
+    999999
+  ],
+  "best_selection": "maximum four-scenario mean validation reward",
+  "learning_rate_start": 0.0003,
+  "learning_rate_end": 1e-05
+}

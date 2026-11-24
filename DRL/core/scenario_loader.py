@@ -7,8 +7,8 @@ import xml.etree.ElementTree as ET
 import yaml
 
 CONFIG_DIR = Path(__file__).resolve().parents[1] / "configs"
-DEFAULTS = dict(simulation_step=1, decision_interval=5,
-                min_green=30, max_green=75, yellow_time=3, all_red_time=0,
+DEFAULTS = dict(simulation_step=0.1, decision_interval=5,
+                min_green=15, max_green=75, yellow_time=3, all_red_time=3,
                 gui=False, max_episode_seconds=None, sumo_binary=None, seed=None)
 
 

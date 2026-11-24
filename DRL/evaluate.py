@@ -1,120 +1,63 @@
-"""Evaluate a trained PPO model on all traffic-demand scenarios."""
+"""V2 deterministic evaluation on shared held-out SUMO seeds."""
 import argparse
-import csv
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
 from stable_baselines3 import PPO
 
+from .artifacts import ROOT, empty_directory, output_path, write_csv
 from .gym_env import TrafficSignalEnv
+from .metrics import SCENARIOS, HELD_OUT_SEEDS, METRICS, episode_summary, aggregate_episodes
 
 
-SCENARIOS = ("low", "medium", "high", "imbalance")
-METRICS = (
-    "queue_length",
-    "waiting_time",
-    "average_speed",
-    "arrived_count",
-    "vehicles_in_network",
-)
-
-
-def evaluate_scenario(model: PPO, scenario: str, seed: int) -> dict:
+def evaluate_scenario(model, scenario, seed, method='drl_ppo'):
     env = TrafficSignalEnv(scenario)
-    observation, _ = env.reset(seed=seed)
     rows = []
-    cumulative_arrived = 0
     try:
-        terminated = truncated = False
-        while not terminated and not truncated:
+        observation, _ = env.reset(seed=seed)
+        while True:
             action, _ = model.predict(observation, deterministic=True)
             observation, _, terminated, truncated, info = env.step(int(action))
-            cumulative_arrived += int(info["arrived_count"])
-            rows.append(
-                {
-                    "scenario": scenario,
-                    "simulation_time": info["sim_time"],
-                    "queue_length": info["queue_length"],
-                    "waiting_time": info["waiting_time"],
-                    "average_speed": info["average_speed"],
-                    "arrived_count": cumulative_arrived,
-                    "vehicles_in_network": info["vehicles_in_network"],
-                }
-            )
+            rows.append(dict(method=method, scenario=scenario, seed=seed,
+                             simulation_time=info['sim_time'],
+                             **{metric: info[metric] for metric in METRICS}))
+            if terminated or truncated:
+                break
     finally:
         env.close()
-    if not rows:
-        raise RuntimeError(f"Scenario {scenario!r} produced no evaluation steps.")
-    return {"scenario": scenario, "rows": rows}
+    return dict(scenario=scenario, seed=seed, rows=rows, summary=episode_summary(rows))
 
 
-def write_csv(results: list[dict], output: Path) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = ("scenario", "simulation_time", *METRICS)
-    with output.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for result in results:
-            writer.writerows(result["rows"])
-
-
-def write_summary(results: list[dict], output: Path) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = ("scenario", *(f"{metric}_mean" for metric in METRICS))
-    with output.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for result in results:
-            rows = result["rows"]
-            writer.writerow(
-                {
-                    "scenario": result["scenario"],
-                    **{
-                        f"{metric}_mean": float(np.mean([row[metric] for row in rows]))
-                        for metric in METRICS
-                    },
-                }
-            )
-
-
-def plot_results(results: list[dict], output: Path) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    figure, axes = plt.subplots(3, 2, figsize=(13, 12), constrained_layout=True)
-    for result in results:
-        rows = result["rows"]
-        label = result["scenario"].title()
-        time = [row["simulation_time"] for row in rows]
-        for axis, metric in zip(axes.flat, METRICS):
-            axis.plot(time, [row[metric] for row in rows], label=label)
-            axis.set_title(metric.replace("_", " ").title())
-            axis.set_xlabel("Simulation time (s)")
-            axis.grid(alpha=0.3)
-    axes.flat[-1].axis("off")
-    axes.flat[0].legend()
-    figure.savefig(output, dpi=150)
-    plt.close(figure)
-
-
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=Path, default=Path("models/ppo_low.zip"))
-    parser.add_argument("--output-dir", type=Path, default=Path("evaluation"))
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument('--model', type=Path, default=ROOT/'models/seed100/best_model/best_model.zip')
+    parser.add_argument('--output-dir', type=Path, default=ROOT/'evaluation/seed100/best')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--seeds', type=int, nargs='+', default=None)
+    group.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--method', choices=('drl_ppo', 'drl_ppo_final'), default='drl_ppo')
     args = parser.parse_args()
-    if args.seed < 0:
-        parser.error("--seed must be nonnegative")
+    seeds = args.seeds or ([args.seed] if args.seed is not None else list(HELD_OUT_SEEDS))
+    if len(set(seeds)) != len(seeds) or any(seed < 0 for seed in seeds):
+        parser.error('Evaluation seeds must be nonnegative and unique')
     if not args.model.is_file():
-        parser.error(f"Model not found: {args.model}")
+        parser.error(f'Model not found: {args.model}')
+    if args.model.resolve() != output_path(args.model):
+        parser.error('V2 evaluator requires a seed100 artifact')
+    output = empty_directory(args.output_dir)
+    model = PPO.load(args.model, device='cuda')
+    if model.observation_space.shape != (12,):
+        raise ValueError('V1 6D models are incompatible with V2; historical models were preserved')
+    results = []
+    for seed in seeds:
+        for scenario in SCENARIOS:
+            result = evaluate_scenario(model, scenario, seed, args.method)
+            results.append(result)
+            print(f'EVAL {args.method} {scenario} seed={seed} arrivals={result["summary"]["arrived_count"]}', flush=True)
+    write_csv(output/'metrics.csv', [r for result in results for r in result['rows']])
+    episodes = [result['summary'] for result in results]
+    write_csv(output/'episodes.csv', episodes)
+    write_csv(output/'summary.csv', aggregate_episodes(episodes))
 
-    model = PPO.load(args.model)
-    results = [evaluate_scenario(model, scenario, args.seed) for scenario in SCENARIOS]
-    write_csv(results, args.output_dir / "metrics.csv")
-    write_summary(results, args.output_dir / "summary.csv")
-    plot_results(results, args.output_dir / "comparison.png")
-    print(f"Evaluation outputs: {args.output_dir}")
-    return 0
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == '__main__':
+    main()

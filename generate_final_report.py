@@ -1,298 +1,177 @@
-"""Generate the Seed 107 DRL comparison report from pipeline artifacts."""
+"""V2 report generator: aggregate episode totals over matched held-out seeds."""
 import argparse
 import csv
 import json
 from pathlib import Path
-import re
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+
+from DRL.artifacts import ROOT, REPORT, output_path, write_csv
+from DRL.metrics import SCENARIOS, METRICS, aggregate_episodes, episode_summary
+
+METHODS = ('fixed_time', 'rule_based', 'drl_ppo', 'drl_ppo_final')
 
 
-ROOT = Path(__file__).resolve().parent
-SCENARIOS = ("low", "medium", "high", "imbalance")
-METHODS = ("fixed_time", "rule_based", "drl_ppo")
-CORE_METRICS = (
-    ("waiting_time", "Waiting Time (s)", "lower"),
-    ("queue_length", "Queue Length (vehicles)", "lower"),
-    ("average_speed", "Average Speed (m/s)", "higher"),
-    ("arrived_count", "Arrived Count (vehicles)", "higher"),
-    ("vehicles_in_network", "Vehicles in Network", "lower"),
-)
+def read_metrics(path):
+    with Path(path).open(encoding='utf-8', newline='') as stream:
+        return [{k: (float(v) if k in (*METRICS, 'simulation_time') else v)
+                 for k, v in row.items()} for row in csv.DictReader(stream)]
 
 
-def load_summary(path: Path) -> dict[tuple[str, str], dict[str, float]]:
-    with path.open(newline="", encoding="utf-8") as file:
-        rows = csv.DictReader(file)
-        result = {}
-        for row in rows:
-            result[(row["method"], row["scenario"])] = {
-                key: float(value)
-                for key, value in row.items()
-                if key not in ("method", "scenario") and value != ""
-            }
-        return result
+def load_episodes(evaluation_root, seeds):
+    episodes = []
+    for method in METHODS[:2]:
+        for seed in seeds:
+            for scenario in SCENARIOS:
+                path = evaluation_root/'baselines'/method/f'seed{seed}'/f'metrics_{scenario}_seed{seed}.csv'
+                episodes.append(checked_episode(read_metrics(path), method, scenario, seed))
+    for folder, method in (('best', 'drl_ppo'), ('final', 'drl_ppo_final')):
+        groups = {}
+        for row in read_metrics(evaluation_root/folder/'metrics.csv'):
+            groups.setdefault((row['scenario'], int(row['seed'])), []).append(row)
+        expected = {(scenario, seed) for scenario in SCENARIOS for seed in seeds}
+        if set(groups) != expected:
+            raise ValueError(f'Unexpected evaluation seed/scenario coverage: {folder}')
+        for scenario, seed in sorted(expected):
+            episodes.append(checked_episode(groups[scenario, seed], method, scenario, seed))
+    return episodes
 
 
-def load_timings(path: Path) -> dict[str, float]:
-    with path.open(encoding="utf-8") as file:
-        return {key: float(value) for key, value in json.load(file).items()}
+def checked_episode(rows, method, scenario, seed):
+    if len(rows) != 720 or any(abs(row['simulation_time'] - 5*(i+1)) > 1e-6
+                               for i, row in enumerate(rows)):
+        raise ValueError(f'Expected 720 post-step samples at 5..3600: {method}/{scenario}/{seed}')
+    if any(row['method'] != method or row['scenario'] != scenario or int(row['seed']) != seed for row in rows):
+        raise ValueError('Metric identity mismatch')
+    # arrived_count is incremental per decision interval: SUM, never mean.
+    result = episode_summary(rows)
+    result['seed'] = int(result['seed'])
+    return result
 
 
-def load_evaluation_summary(path: Path) -> dict[tuple[str, str], dict[str, float]]:
-    with path.open(newline="", encoding="utf-8") as file:
-        result = {}
-        for row in csv.DictReader(file):
-            result[("drl_ppo", row["scenario"])] = {
-                key.removesuffix("_mean"): float(value)
-                for key, value in row.items()
-                if key != "scenario" and value != ""
-            }
-        return result
+def comparison_plot(summary, output):
+    output = output_path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    lookup = {(r['method'], r['scenario']): r for r in summary}
+    fig, axes = plt.subplots(3, 2, figsize=(15, 12), constrained_layout=True)
+    positions = np.arange(4)
+    labels = ('Fixed-Time', 'Rule-Based', 'PPO best', 'PPO final (secondary)')
+    for axis, metric in zip(axes.flat, METRICS):
+        for index, (method, label) in enumerate(zip(METHODS, labels)):
+            rows = [lookup[method, scenario] for scenario in SCENARIOS]
+            axis.bar(positions+(index-1.5)*0.2,
+                     [r[metric+'_mean'] for r in rows], 0.2,
+                     yerr=[r[metric+'_std'] for r in rows], capsize=2, label=label)
+        axis.set_xticks(positions, SCENARIOS)
+        axis.set_title(metric)
+        axis.grid(axis='y', alpha=0.25)
+    axes.flat[-1].axis('off')
+    axes.flat[0].legend(fontsize=8)
+    fig.savefig(output, dpi=150)
+    plt.close(fig)
 
 
-def fmt(value: float | None) -> str:
-    return "N/A" if value is None else f"{value:.2f}"
-
-
-def improvement(baseline: float, candidate: float, direction: str) -> float | None:
-    if baseline == 0:
-        return None
-    if direction == "lower":
-        return (baseline - candidate) / baseline * 100
-    return (candidate - baseline) / baseline * 100
-
-
-def runtime_text(seconds: float) -> str:
-    return f"{seconds / 3600:.2f} hours ({seconds:.2f} seconds)"
-
-
-def metric_table(data: dict[tuple[str, str], dict[str, float]], timesteps: int) -> str:
+def build_report(summary, metadata, timings, seeds, dry_run=False):
+    lookup = {(r['method'], r['scenario']): r for r in summary}
+    def cell(method, scenario, metric):
+        row = lookup[method, scenario]
+        return f'{row[metric+"_mean"]:.2f} ± {row[metric+"_std"]:.2f}'
     lines = [
-        f"| Metric | Fixed-Time | Rule-Based | DRL PPO ({timesteps // 1000}k) |",
-        "|---|---:|---:|---:|",
+        '# DRL Seed100 — V2 experimental report',
+        '',
+        '**DRY-RUN / PREFLIGHT ONLY — not a 600k experiment.**' if dry_run else
+        '**Completed V2 seed100 experiment; results below are measured artifacts.**',
+        '',
+        '## Configuration and execution',
+        '',
+        f'- Training seed: 100; requested/actual steps: {metadata["requested_timesteps"]:,} / {metadata["actual_timesteps"]:,}.',
+        f'- GPU: {metadata["gpu"]}; fixed validation seed999; held-out evaluation seeds: {list(seeds)}.',
+        '- Training seeds sampled only from [1000,999999]; shuffled cycles cover all four scenarios.',
+        '- 12D directional observations clipped to [0,1]; MLP actor/critic [128,128].',
+        '- Reward = clip(-[Q_NS+Q_EW+0.05(W_NS+W_EW)+0.02(Q_NS-Q_EW)^2]/100,-10,0).',
+        '- SUMO step0.1s; decision5s; min/max green15/75s; yellow/all-red3/3s.',
+        '- PPO: n_steps2880, batch96, epochs5, gamma0.99, GAE0.95, clip0.2, entropy0.01, vf0.5, grad_norm0.5, target_KL0.02.',
+        '- LR linearly decreases 3e-4→1e-5; CUDA; advantage normalization enabled.',
+        '- Best model selected ONLY by mean reward on four seed999 validation episodes; held-out seeds never select the model.',
+        f'- Timings in seconds: {json.dumps(timings, ensure_ascii=False)}',
+        '',
+        '## Fair multi-seed traffic results',
+        '',
+        'Mean ± sample Std (ddof=1) over evaluation seeds; single-seed preflight reports Std=0, not an uncertainty estimate.',
+        'Queue/wait/speed/network count: means of 720 post-step snapshots at t=5..3600s.',
+        'Arrivals: SUM of incremental arrivals over every 0.1s substep for the full episode.',
+        'Speed: vehicle-count-weighted over the same eight incoming lanes for all methods.',
+        'Same SUMO seeds and input files are passed directly to all methods; controlled trajectories may differ.',
+        '',
+        '| Scenario | Metric | Fixed-Time | Rule-Based | PPO best | PPO final (secondary) |',
+        '|---|---|---:|---:|---:|---:|',
     ]
     for scenario in SCENARIOS:
-        lines.append(f"| **{scenario.title()}** |  |  |  |")
-        for key, label, _ in CORE_METRICS:
-            values = [
-                data.get((method, scenario), {}).get(key)
-                for method in METHODS
-            ]
-            lines.append(
-                f"| {label} | {fmt(values[0])} | {fmt(values[1])} | {fmt(values[2])} |"
-            )
-    return "\n".join(lines)
-
-
-def improvement_table(data: dict[tuple[str, str], dict[str, float]]) -> str:
-    lines = [
-        "| Scenario | Metric | DRL vs Fixed-Time | DRL vs Rule-Based |",
-        "|---|---|---:|---:|",
-    ]
+        for metric in METRICS:
+            lines.append('| '+scenario+' | '+metric+' | '+
+                         ' | '.join(cell(m, scenario, metric) for m in METHODS)+' |')
+    lines += ['', '![V2 comparison](../seed100/plots/seed100_baseline_comparison.png)',
+              '', '## Historical V1 → V2 context', '',
+              'Descriptive comparison only: V1 used different timing (min green30s), unmatched traffic seeds,',
+              'and faulty arrivals/speed definitions. Do not attribute changes solely to the neural network.',
+              '', '| Scenario | V1 PPO107 waiting | V1 PPO710 waiting | V2 PPO best waiting |',
+              '|---|---:|---:|---:|']
+    historical = {}
+    for seed in (107, 710):
+        path = ROOT/f'results/seed{seed}/summary_final.csv'
+        if path.is_file():
+            with path.open(encoding='utf-8') as stream:
+                historical[seed] = {r['scenario']: r for r in csv.DictReader(stream) if r['method'] == 'drl_ppo'}
     for scenario in SCENARIOS:
-        for key, label, direction in CORE_METRICS[:3]:
-            fixed = data.get(("fixed_time", scenario), {}).get(key)
-            rule = data.get(("rule_based", scenario), {}).get(key)
-            drl = data.get(("drl_ppo", scenario), {}).get(key)
-            fixed_value = improvement(fixed, drl, direction) if fixed is not None and drl is not None else None
-            rule_value = improvement(rule, drl, direction) if rule is not None and drl is not None else None
-            lines.append(
-                f"| {scenario.title()} | {label} | {fmt(fixed_value)}% | {fmt(rule_value)}% |"
-            )
-    return "\n".join(lines)
+        values = [f'{float(historical[s][scenario]["waiting_time"]):.2f}'
+                  if s in historical else 'N/A' for s in (107, 710)]
+        lines.append(f'| {scenario} | {values[0]} | {values[1]} | {cell("drl_ppo", scenario, "waiting_time")} |')
+    lines += ['', '## Interpretation and limitations', '',
+              'Waiting is the time-mean of the sum of current lane waiting times, not mean trip delay.',
+              'Evaluation stops at3600s; remaining vehicles are reported; completed-trip delay is not inferred.',
+              'Collision warnings are retained in subprocess.log; low queue/wait does not establish collision-free operation.',
+              'Normalization clips queue>60, vehicles>80 and waiting>1500 per axis; saturation and imbalance penalty can trade throughput against balance.',
+              'Only three held-out seeds support this comparison; no guarantee of superiority or convergence is implied.',
+              'V1 models, evaluations, results, event logs and existing comparison Markdown files were preserved.',
+              '', 'Sources: per-step metrics.csv, per-episode episodes.csv, summary_final.csv, pipeline_timings.json,',
+              'training_metadata.json and the preserved V1 seed107/seed710 summaries.']
+    return '\n'.join(lines)+'\n'
 
 
-def execution_table(data: dict[tuple[str, str], dict[str, float]], timings: dict[str, float]) -> str:
-    lines = [
-        "| Method | Scenario | Execution Time (s) |",
-        "|---|---|---:|",
-    ]
-    for method in METHODS:
-        for scenario in SCENARIOS:
-            if method == "drl_ppo":
-                seconds = timings.get("drl_evaluation")
-            else:
-                seconds = timings.get(f"{method}_{scenario}")
-            lines.append(f"| {method} | {scenario} | {fmt(seconds)} |")
-    lines.append(f"| PPO training | all scenarios | {fmt(timings.get('drl_training'))} |")
-    lines.append(f"| Total pipeline | all stages | {fmt(timings.get('total_pipeline'))} |")
-    return "\n".join(lines)
-
-
-def build_report(data: dict[tuple[str, str], dict[str, float]],
-                 timings: dict[str, float], seed: int, timesteps: int,
-                 checkpoint: Path, plot_path: Path) -> str:
-    total = timings.get("total_pipeline", 0.0)
-    training = timings.get("drl_training", 0.0)
-    has_20k = any(
-        re.search(r"(?<!\d)(?:20k|20000)(?!\d)", str(path), re.IGNORECASE)
-        for path in ROOT.glob("**/*")
-        if path.is_file()
-    )
-    report = [
-        f"# DRL Seed {seed} Experimental Report",
-        "",
-        f"**Status:** Completed Seed {seed} multi-scenario PPO experiment.",
-        "",
-        "## 1. Objective",
-        "",
-        "Compare Fixed-Time, Rule-Based, and a single PPO agent trained across "
-        "the four SUMO demand scenarios.",
-        "",
-        "## 2. Experimental Setup",
-        "",
-        "| Parameter | Configuration |",
-        "|---|---|",
-        "| Simulator | SUMO 1.28.0 |",
-        "| Algorithm | PPO (Stable-Baselines3) |",
-        "| Training scenarios | Low; Medium; High; Imbalance |",
-        f"| Seed | {seed} |",
-        f"| Timesteps | {timesteps:,} |",
-        "| Simulation step | 0.1 s |",
-        "| Decision interval | 5 s (50 simulation steps) |",
-        "| GUI | Disabled |",
-        f"| Total pipeline runtime | {runtime_text(total)} |",
-        f"| PPO training runtime | {runtime_text(training)} |",
-        "",
-        "## 3. Evaluation Metrics",
-        "",
-        "The report uses the pipeline's measured values for queue length, "
-        "waiting time, average speed, arrived count, and vehicles remaining. "
-        "For waiting time and queue length, lower is better; for speed and "
-        "arrivals, higher is better.",
-        "",
-        f"## 4. Results — Seed {seed}",
-        "",
-        metric_table(data, timesteps),
-        "",
-        "## 5. DRL PPO Improvement",
-        "",
-        "Improvement (%) = (baseline - DRL) / baseline x 100 for metrics where "
-        "lower is better. For average speed, the numerator is DRL - baseline.",
-        "",
-        improvement_table(data),
-        "",
-        "## 6. Execution Time",
-        "",
-        execution_table(data, timings),
-        "",
-        "## 7. Advanced Performance Metrics",
-        "",
-        "| Method | Scenario | Total Travel Time | Average Delay / Vehicle | Throughput |",
-        "|---|---|---:|---:|---:|",
-    ]
-    for method in METHODS:
-        for scenario in SCENARIOS:
-            row = data.get((method, scenario), {})
-            report.append(
-                f"| {method} | {scenario} | {fmt(row.get('total_travel_time'))} | "
-                f"{fmt(row.get('average_delay_per_vehicle'))} | {fmt(row.get('throughput'))} |"
-            )
-    report.extend(
-        [
-            "",
-            "## 8. Analysis",
-            "",
-            "### Heavy and Imbalanced Traffic",
-            "",
-            "The high and imbalance scenarios are the most demanding tests. "
-            "The tables above should be read together: queue and waiting-time "
-            "reductions indicate congestion relief, while speed and throughput "
-            "indicate whether that relief translates into useful traffic flow.",
-            "",
-            "### Single Multi-Scenario Agent",
-            "",
-            "The PPO policy is one agent trained while sampling all four scenarios. "
-            "This improves deployment simplicity and tests transfer across demand "
-            "patterns, but it can trade peak performance in one scenario for "
-            "robustness across the full distribution.",
-            "",
-            "### Computation Cost",
-            "",
-            f"The recorded PPO training time was {runtime_text(training)} and the "
-            f"complete pipeline took {runtime_text(total)}. Checkpointing provides "
-            "recovery points during long runs.",
-            "",
-            "### Learning Curve and Checkpoint",
-            "",
-            f"The recommended deployment checkpoint is "
-            f"`{checkpoint.relative_to(ROOT).as_posix() if checkpoint.is_relative_to(ROOT) else checkpoint}` "
-            f"({'present' if checkpoint.is_file() else 'not found in the workspace'}).",
-            "",
-            "The requested peak-reward and policy-degradation claims must be "
-            "verified against the TensorBoard event file before being treated as "
-            "measured findings; this report does not fabricate values that are "
-            "not present in the CSV/JSON inputs.",
-            "",
-            "### Comparison with a 20k Single-Scenario Model",
-            "",
-            (
-                "A 20k single-scenario artifact was not found in the workspace; "
-                "therefore a numerical comparison is not reported."
-                if not has_20k
-                else
-                "A 20k artifact exists in the workspace and should be compared "
-                "using the same seed, scenario, and metric definitions."
-            ),
-            "",
-            "## 9. Comparison Plot",
-            "",
-            f"![Seed {seed} comparison]({plot_path.as_posix()})",
-            "",
-            "## 10. Data Sources",
-            "",
-            "- `results/summary_final.csv`",
-            "- `evaluation/summary.csv`",
-            "- `results/pipeline_timings.json`",
-            "- `results/comparison_result/baseline_comparsion_seed57.md` "
-            "(format reference)",
-        ]
-    )
-    return "\n".join(report) + "\n"
-
-
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--seed", type=int, default=107)
-    parser.add_argument("--timesteps", type=int, default=800_000)
-    parser.add_argument("--summary", type=Path)
-    parser.add_argument("--evaluation", type=Path)
-    parser.add_argument("--timings", type=Path)
-    parser.add_argument("--checkpoint", type=Path)
-    parser.add_argument("--plot", type=Path)
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=ROOT / "results" / "comparison_result" / "drl_seed107_report.md",
-    )
+    parser.add_argument('--evaluation-root', type=Path, default=ROOT/'evaluation/seed100')
+    parser.add_argument('--result-dir', type=Path, default=ROOT/'results/seed100')
+    parser.add_argument('--model-root', type=Path, default=ROOT/'models/seed100')
+    parser.add_argument('--output', type=Path, default=REPORT)
+    parser.add_argument('--seeds', type=int, nargs='+', default=[101, 102, 103])
+    parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
-    seed_dir = ROOT / "results" / f"seed{args.seed}"
-    evaluation_dir = ROOT / "evaluation" / f"seed{args.seed}"
-    args.summary = args.summary or seed_dir / "summary_final.csv"
-    args.evaluation = args.evaluation or evaluation_dir / "summary.csv"
-    args.timings = args.timings or seed_dir / "pipeline_timings.json"
-    args.checkpoint = args.checkpoint or ROOT / "models" / f"seed{args.seed}" / "checkpoints" / f"ppo_seed{args.seed}_500000_steps.zip"
-    args.plot = args.plot or seed_dir / "plots" / f"seed{args.seed}_baseline_comparison_5plots.png"
-    data = load_summary(args.summary)
-    if args.evaluation.is_file():
-        evaluation_data = load_evaluation_summary(args.evaluation)
-        for key, row in evaluation_data.items():
-            data.setdefault(key, {}).update(
-                {metric: value for metric, value in row.items()
-                 if metric not in data.get(key, {})}
-            )
-    timings = load_timings(args.timings)
-    missing = [
-        (method, scenario)
-        for method in METHODS
-        for scenario in SCENARIOS
-        if (method, scenario) not in data
-    ]
-    if missing:
-        raise ValueError(f"Missing summary rows: {missing}")
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(build_report(data, timings, args.seed, args.timesteps, args.checkpoint, args.plot), encoding="utf-8")
-    print(f"Generated report: {args.output}")
-    return 0
+    result_dir = output_path(args.result_dir)
+    output = output_path(args.output)
+    if output.exists():
+        raise FileExistsError(f'Refusing to overwrite report: {output}')
+    episodes = load_episodes(args.evaluation_root, args.seeds)
+    summary = aggregate_episodes(episodes)
+    write_csv(result_dir/'episodes.csv', episodes)
+    write_csv(result_dir/'summary_final.csv', summary)
+    plot = result_dir/'plots/seed100_baseline_comparison.png'
+    comparison_plot(summary, plot)
+    metadata = json.loads((args.model_root/'training_metadata.json').read_text())
+    timings = json.loads((result_dir/'pipeline_timings.json').read_text())
+    output.parent.mkdir(parents=True, exist_ok=True)
+    # Use a relative plot link for dry-run paths as well.
+    import os
+    report = build_report(summary, metadata, timings, args.seeds, args.dry_run)
+    report = report.replace('../seed100/plots/seed100_baseline_comparison.png',
+                            Path(os.path.relpath(plot, output.parent)).as_posix())
+    with output.open('x', encoding='utf-8') as stream:
+        stream.write(report)
+    print(f'Generated V2 summary, plot, report: {output}', flush=True)
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == '__main__':
+    main()

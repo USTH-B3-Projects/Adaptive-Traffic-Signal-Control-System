@@ -1,94 +1,61 @@
-"""Gymnasium wrapper around the repository's TraCI environment."""
-from collections.abc import Mapping
-
+"""V2: 12D directional normalized observations and scaled reward."""
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
 from .core.environment import Environment
+from .metrics import NS_LANES, EW_LANES, directional
 
 
 class TrafficSignalEnv(gym.Env):
-    """Single-agent environment controlling all traffic lights together."""
+    metadata = {'render_modes': []}
 
-    metadata = {"render_modes": []}
-
-    def __init__(self, scenario: str = "low"):
+    def __init__(self, scenario='low'):
         super().__init__()
         self.scenario = scenario
+        self._sumo_seed = None
         self._environment = Environment()
-        self._tls_ids: tuple[str, ...] = ()
-        self._expected_tls_count = 1
         self.action_space = spaces.Discrete(2)
-        self.observation_space = spaces.Box(
-            low=0.0,
-            high=np.inf,
-            shape=(6 * self._expected_tls_count,),
-            dtype=np.float32,
-        )
+        self.observation_space = spaces.Box(0.0, 1.0, shape=(12,), dtype=np.float32)
 
-    def _observation(self, state: Mapping) -> np.ndarray:
-        values = []
-        for tls_id in self._tls_ids:
-            totals = state["tls"][tls_id]["totals"]
-            values.extend(
-                (
-                    totals["halting_count"],
-                    totals["waiting_time"] or 0.0,
-                    totals["average_speed"] or 0.0,
-                    totals["vehicle_count"],
-                    state["tls"][tls_id]["phase_id"],
-                    state["tls"][tls_id]["green_elapsed"],
-                )
-            )
-        return np.asarray(values, dtype=np.float32)
+    def _observation(self, state):
+        tls = state['tls']['J']
+        qn, nn, wn, vn = directional(tls['lanes'], NS_LANES)
+        qe, ne, we, ve = directional(tls['lanes'], EW_LANES)
+        phase, elapsed = tls['phase_id'], tls['green_elapsed']
+        values = (qn/60.0, qe/60.0, nn/80.0, ne/80.0, wn/1500.0, we/1500.0,
+                  vn/13.9, ve/13.9, float(phase in (0, 1)), float(phase in (4, 5)),
+                  elapsed/75.0, float(not tls['in_transition'] and elapsed >= 15.0))
+        return np.clip(np.asarray(values, dtype=np.float32), 0.0, 1.0)
 
-    def _reward(self, state: Mapping) -> float:
-        queue = 0.0
-        waiting = 0.0
-        for tls in state["tls"].values():
-            queue += tls["totals"]["halting_count"]
-            waiting += tls["totals"]["waiting_time"] or 0.0
-        return -(queue + 0.1 * waiting)
+    def _reward(self, state):
+        lanes = state['tls']['J']['lanes']
+        qn, _, wn, _ = directional(lanes, NS_LANES)
+        qe, _, we, _ = directional(lanes, EW_LANES)
+        raw_penalty = (qn + qe) + 0.05 * (wn + we) + 0.02 * ((qn - qe) ** 2)
+        return float(np.clip(-raw_penalty / 100.0, -10.0, 0.0))
 
-    def reset(self, *, seed: int | None = None, options=None):
+    def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
-        state = self._environment.reset(
-            self.scenario, seed=int(self.np_random.integers(0, 2**31 - 1))
-        )
-        self._tls_ids = tuple(sorted(state["tls"]))
-        if len(self._tls_ids) != self._expected_tls_count:
-            raise RuntimeError(
-                f"Expected {self._expected_tls_count} traffic light, "
-                f"found {len(self._tls_ids)}."
-            )
-        self.observation_space = spaces.Box(
-            low=0.0, high=np.inf, shape=(6 * len(self._tls_ids),), dtype=np.float32
-        )
-        return self._observation(state), {"scenario": self.scenario}
+        try:
+            state = self._environment.reset(self.scenario, seed=seed)
+            self._sumo_seed = seed
+            if set(state['tls']) != {'J'}:
+                raise ValueError('V2 requires the single J intersection with NS/EW lanes')
+            return self._observation(state), {'scenario': self.scenario, 'sumo_seed': seed}
+        except BaseException:
+            self.close()
+            raise
 
-    def step(self, action: int):
-        if not self._tls_ids:
-            raise RuntimeError("Call reset before step.")
+    def step(self, action):
         if not self.action_space.contains(action):
-            raise ValueError(f"Invalid action: {action}")
-        state, terminated, truncated, info = self._environment.step(
-            "SWITCH" if action else "KEEP"
-        )
-        info["queue_length"] = sum(
-            tls["totals"]["halting_count"] for tls in state["tls"].values()
-        )
-        info["waiting_time"] = sum(
-            tls["totals"]["waiting_time"] or 0.0 for tls in state["tls"].values()
-        )
-        vehicles = sum(
-            tls["totals"]["vehicle_count"] for tls in state["tls"].values()
-        )
-        speed_weight = sum(
-            (tls["totals"]["average_speed"] or 0.0) * tls["totals"]["vehicle_count"]
-            for tls in state["tls"].values()
-        )
-        info["average_speed"] = speed_weight / vehicles if vehicles else 0.0
+            raise ValueError(f'Invalid action: {action}')
+        state, terminated, truncated, info = self._environment.step('SWITCH' if action else 'KEEP')
+        totals = state['tls']['J']['totals']
+        info.update(queue_length=totals['halting_count'],
+                    waiting_time=totals['waiting_time'] or 0.0,
+                    average_speed=totals['average_speed'] or 0.0,
+                    scenario=self.scenario, sumo_seed=self._sumo_seed)
         return self._observation(state), self._reward(state), terminated, truncated, info
 
     def close(self):

@@ -4,6 +4,54 @@ This package connects an external controller to SUMO. It starts SUMO, reads traf
 
 Your integration program supplies the LLM or DRL model. It owns model loading, prompts, observation encoding, reward calculation, training, and any result storage.
 
+## V2 — Seed100 overnight pipeline
+
+V2 uses 12 normalized directional features and the scaled reward
+`clip(-(Q_NS+Q_EW+0.05*(W_NS+W_EW)+0.02*(Q_NS-Q_EW)**2)/100,-10,0)`.
+Green bounds are 15–75 s, yellow/all-red are 3/3 s. Feature order is queue_NS/EW,
+vehicles_NS/EW, waiting_NS/EW, weighted_speed_NS/EW, is_NS_green, is_EW_green,
+elapsed_green and can_switch. Scales are 60, 80, 1500, 13.9 and75 respectively;
+all features are clipped to [0,1], with empty-axis speed feature1.
+
+From the repository root, using the installed CUDA-enabled atsc environment:
+
+```powershell
+& 'C:\Users\Admin\miniconda3\envs\atsc\python.exe' -u run_pipeline_seed100.py --dry-run
+& 'C:\Users\Admin\miniconda3\envs\atsc\python.exe' -u run_pipeline_seed100.py
+```
+
+Dry-run: 5760 steps on CUDA, four-scenario validation, checkpointing, full four-scenario
+testing on seed101, best/final evaluation, CSV/plot/report. Successful temporary
+artifacts are removed; evidence remains in `results/seed100/preflight_check.json`.
+Failed runs retain logs for diagnosis. Preflight never starts the600k run itself.
+
+Production: 600000 requested steps, 601920 actual steps, 209 rollouts and normally
+836 completed720-step episodes. Each shuffled cycle covers four scenarios.
+Training SUMO seeds lie in [1000,999999], validation uses999 for each scenario,
+and held-out testing uses101/102/103. Only validation mean reward chooses best_model.
+
+All outputs stay in `models/seed100/`, `evaluation/seed100/`, `results/seed100/`,
+`runs/ppo_seed100/` and `results/comparison_result/drl_seed100_v2_report.md`.
+Nonempty model/evaluation/run directories and existing reports/logs are refused.
+Follow `results/seed100/pipeline.log` (30-second heartbeat) and `subprocess.log`.
+On interruption only the owned child process tree is terminated, not other SUMO instances.
+
+All methods use post-step sampling at5..3600s and the same eight incoming lanes.
+Per-step arrived_count is incremental; episode arrivals are its SUM. Other metrics
+are snapshot means; waiting is not completed-trip delay. Std is sample Std(ddof=1).
+Seeds and inputs are matched; controller-dependent trajectories/random events may differ.
+Collision warnings remain in logs. Best-model and final-model tests are stored separately.
+
+V1 6D models are incompatible with V2 12D observations. Legacy seed107/seed710
+pipeline entry points are frozen to prevent overwrites; all historical artifacts remain.
+Dependencies are pinned in requirements.txt. Semantic tests:
+`python -B -m unittest discover -s tests -p test_v2.py -v`.
+
+## Historical bridge documentation (V1)
+
+The remainder records the earlier API. Old PPO commands/paths and timing defaults
+below are historical; use the V2 pipeline and current YAML for new experiments.
+
 ## How the connection works
 
 ```text

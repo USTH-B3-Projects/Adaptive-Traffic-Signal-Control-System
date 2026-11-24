@@ -1,0 +1,505 @@
+{
+  "status": "passed",
+  "completed_episodes": 12,
+  "decision_records": 8640,
+  "episode_metric_checks": 60,
+  "episode_metric_exact_matches": 60,
+  "step_metric_and_time_exact_checks": 51840,
+  "max_absolute_episode_difference": 0.0,
+  "completed_green_intervals": 1516,
+  "outcome_counts": {
+    "KEEP": 3452,
+    "SWITCH": 1427,
+    "transition_noop": 1515,
+    "blocked_min_green": 2157,
+    "forced_max_green": 89
+  },
+  "request_override_counts": {
+    "no_override": 4968,
+    "in_transition": 1515,
+    "min_green": 2157
+  },
+  "protected_files_unchanged": 188,
+  "comparisons": [
+    {
+      "scenario": "low",
+      "seed": 101,
+      "metric": "queue_length",
+      "actual": 2.4444444444444446,
+      "reference": 2.4444444444444446,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 101,
+      "metric": "waiting_time",
+      "actual": 23.061527777777776,
+      "reference": 23.061527777777776,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 101,
+      "metric": "average_speed",
+      "actual": 8.22046697851289,
+      "reference": 8.22046697851289,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 101,
+      "metric": "arrived_count",
+      "actual": 1168.0,
+      "reference": 1168.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 101,
+      "metric": "vehicles_in_network",
+      "actual": 17.038888888888888,
+      "reference": 17.038888888888888,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 101,
+      "metric": "queue_length",
+      "actual": 7.1375,
+      "reference": 7.1375,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 101,
+      "metric": "waiting_time",
+      "actual": 69.84180555555555,
+      "reference": 69.84180555555555,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 101,
+      "metric": "average_speed",
+      "actual": 7.506356533300514,
+      "reference": 7.506356533300514,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 101,
+      "metric": "arrived_count",
+      "actual": 2998.0,
+      "reference": 2998.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 101,
+      "metric": "vehicles_in_network",
+      "actual": 46.6125,
+      "reference": 46.6125,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 101,
+      "metric": "queue_length",
+      "actual": 31.805555555555557,
+      "reference": 31.805555555555557,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 101,
+      "metric": "waiting_time",
+      "actual": 372.8695833333333,
+      "reference": 372.8695833333333,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 101,
+      "metric": "average_speed",
+      "actual": 4.588899124919159,
+      "reference": 4.588899124919159,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 101,
+      "metric": "arrived_count",
+      "actual": 5354.0,
+      "reference": 5354.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 101,
+      "metric": "vehicles_in_network",
+      "actual": 120.06388888888888,
+      "reference": 120.06388888888888,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 101,
+      "metric": "queue_length",
+      "actual": 21.36111111111111,
+      "reference": 21.36111111111111,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 101,
+      "metric": "waiting_time",
+      "actual": 362.18194444444447,
+      "reference": 362.18194444444447,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 101,
+      "metric": "average_speed",
+      "actual": 5.025330286705449,
+      "reference": 5.025330286705449,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 101,
+      "metric": "arrived_count",
+      "actual": 4152.0,
+      "reference": 4152.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 101,
+      "metric": "vehicles_in_network",
+      "actual": 87.96805555555555,
+      "reference": 87.96805555555555,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 102,
+      "metric": "queue_length",
+      "actual": 2.4805555555555556,
+      "reference": 2.4805555555555556,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 102,
+      "metric": "waiting_time",
+      "actual": 23.284444444444443,
+      "reference": 23.284444444444443,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 102,
+      "metric": "average_speed",
+      "actual": 8.152206213068414,
+      "reference": 8.152206213068414,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 102,
+      "metric": "arrived_count",
+      "actual": 1155.0,
+      "reference": 1155.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 102,
+      "metric": "vehicles_in_network",
+      "actual": 16.720833333333335,
+      "reference": 16.720833333333335,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 102,
+      "metric": "queue_length",
+      "actual": 7.086111111111111,
+      "reference": 7.086111111111111,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 102,
+      "metric": "waiting_time",
+      "actual": 68.60180555555556,
+      "reference": 68.60180555555556,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 102,
+      "metric": "average_speed",
+      "actual": 7.528445098888665,
+      "reference": 7.528445098888665,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 102,
+      "metric": "arrived_count",
+      "actual": 2960.0,
+      "reference": 2960.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 102,
+      "metric": "vehicles_in_network",
+      "actual": 45.56944444444444,
+      "reference": 45.56944444444444,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 102,
+      "metric": "queue_length",
+      "actual": 37.41111111111111,
+      "reference": 37.41111111111111,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 102,
+      "metric": "waiting_time",
+      "actual": 446.3661111111111,
+      "reference": 446.3661111111111,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 102,
+      "metric": "average_speed",
+      "actual": 4.168857000448409,
+      "reference": 4.168857000448409,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 102,
+      "metric": "arrived_count",
+      "actual": 5257.0,
+      "reference": 5257.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 102,
+      "metric": "vehicles_in_network",
+      "actual": 127.27638888888889,
+      "reference": 127.27638888888889,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 102,
+      "metric": "queue_length",
+      "actual": 20.59861111111111,
+      "reference": 20.59861111111111,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 102,
+      "metric": "waiting_time",
+      "actual": 323.59375,
+      "reference": 323.59375,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 102,
+      "metric": "average_speed",
+      "actual": 5.081506909281026,
+      "reference": 5.081506909281026,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 102,
+      "metric": "arrived_count",
+      "actual": 4114.0,
+      "reference": 4114.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 102,
+      "metric": "vehicles_in_network",
+      "actual": 86.02916666666667,
+      "reference": 86.02916666666667,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 103,
+      "metric": "queue_length",
+      "actual": 2.5458333333333334,
+      "reference": 2.5458333333333334,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 103,
+      "metric": "waiting_time",
+      "actual": 23.685694444444444,
+      "reference": 23.685694444444444,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 103,
+      "metric": "average_speed",
+      "actual": 8.072254073933841,
+      "reference": 8.072254073933841,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 103,
+      "metric": "arrived_count",
+      "actual": 1202.0,
+      "reference": 1202.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "low",
+      "seed": 103,
+      "metric": "vehicles_in_network",
+      "actual": 17.565277777777776,
+      "reference": 17.565277777777776,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 103,
+      "metric": "queue_length",
+      "actual": 7.625,
+      "reference": 7.625,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 103,
+      "metric": "waiting_time",
+      "actual": 76.59375,
+      "reference": 76.59375,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 103,
+      "metric": "average_speed",
+      "actual": 7.383552281543349,
+      "reference": 7.383552281543349,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 103,
+      "metric": "arrived_count",
+      "actual": 2994.0,
+      "reference": 2994.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "medium",
+      "seed": 103,
+      "metric": "vehicles_in_network",
+      "actual": 47.15138888888889,
+      "reference": 47.15138888888889,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 103,
+      "metric": "queue_length",
+      "actual": 30.694444444444443,
+      "reference": 30.694444444444443,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 103,
+      "metric": "waiting_time",
+      "actual": 366.23541666666665,
+      "reference": 366.23541666666665,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 103,
+      "metric": "average_speed",
+      "actual": 4.7177188839674224,
+      "reference": 4.7177188839674224,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 103,
+      "metric": "arrived_count",
+      "actual": 5194.0,
+      "reference": 5194.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "high",
+      "seed": 103,
+      "metric": "vehicles_in_network",
+      "actual": 114.44305555555556,
+      "reference": 114.44305555555556,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 103,
+      "metric": "queue_length",
+      "actual": 21.606944444444444,
+      "reference": 21.606944444444444,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 103,
+      "metric": "waiting_time",
+      "actual": 365.1333333333333,
+      "reference": 365.1333333333333,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 103,
+      "metric": "average_speed",
+      "actual": 5.0800313710719305,
+      "reference": 5.0800313710719305,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 103,
+      "metric": "arrived_count",
+      "actual": 4019.0,
+      "reference": 4019.0,
+      "exact_match": true
+    },
+    {
+      "scenario": "imbalance",
+      "seed": 103,
+      "metric": "vehicles_in_network",
+      "actual": 86.27638888888889,
+      "reference": 86.27638888888889,
+      "exact_match": true
+    }
+  ]
+}

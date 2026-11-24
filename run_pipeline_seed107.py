@@ -167,6 +167,7 @@ def plot_summary(rows: list[dict], output: Path) -> None:
 
 
 def main() -> int:
+    raise SystemExit('V1 pipeline is frozen to preserve seed107 artifacts. Use run_pipeline_seed100.py for V2.')
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=SEED)
     parser.add_argument("--timesteps", type=int, default=TIMESTEPS)

@@ -1,0 +1,2 @@
+method,scenario,seed,queue_length,waiting_time,average_speed,arrived_count,vehicles_in_network,samples,end_time
+rule_based,high,101,32.28055555555556,392.6684722222222,4.580506546364014,5360,119.41666666666667,720,3600.0

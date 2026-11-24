@@ -82,7 +82,7 @@ class Simulation:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
         command = [binary, "-c", str(scenario.config_path), "--step-length", str(self.settings["simulation_step"]),
-                   "--remote-port", str(port)]
+                   "--remote-port", str(port), "--no-step-log", "true"]
         if self.settings["gui"]:
             command.extend(("--start", "--quit-on-end"))
         if seed is not None:

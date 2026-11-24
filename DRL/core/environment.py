@@ -76,10 +76,12 @@ class Environment:
             if self._end is not None:
                 deadline = min(deadline, self._end)
             automatic = []
+            arrived_count = 0
             terminated = self.connection.simulation.getMinExpectedNumber() == 0
             truncated = False
             while not terminated and now < deadline - 1e-8:
                 self.connection.simulationStep()
+                arrived_count += self.connection.simulation.getArrivedNumber()
                 now = self.connection.simulation.getTime()
                 events = self.signals.advance(now)
                 for event in events:
@@ -101,7 +103,7 @@ class Environment:
                 phase_id={tls: value["phase_id"] for tls, value in self._state["tls"].items()},
                 green_elapsed={tls: value["green_elapsed"] for tls, value in self._state["tls"].items()},
                 automatic_events=automatic,
-                arrived_count=self.connection.simulation.getArrivedNumber(),
+                arrived_count=arrived_count,
                 vehicles_in_network=self.connection.vehicle.getIDCount(),
                 end_reason="demand_exhausted" if terminated else "time_limit" if truncated else None,
             )

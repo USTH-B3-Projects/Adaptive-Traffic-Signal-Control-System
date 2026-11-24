@@ -88,6 +88,7 @@ def create_bar_plot(summary: Path, output: Path) -> None:
 
 
 def main() -> int:
+    raise SystemExit('V1 pipeline is frozen to preserve seed710 artifacts. Use run_pipeline_seed100.py for V2.')
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=710)
     parser.add_argument("--timesteps", type=int, default=600_000)

@@ -5,13 +5,13 @@ import math
 class SignalController:
     def __init__(self, connection, settings: dict) -> None:
         self.connection = connection
-        self.step = float(settings.get("simulation_step", 1))
+        self.step = float(settings.get("simulation_step", 0.1))
         if not math.isfinite(self.step) or self.step <= 0:
             raise ValueError("simulation_step must be positive")
-        self.minimum = self._duration(settings.get("min_green", 30))
+        self.minimum = self._duration(settings.get("min_green", 15))
         self.maximum = self._duration(settings.get("max_green", 75))
         yellow = self._duration(settings.get("yellow_time", 3))
-        red = self._duration(settings.get("all_red_time", 0))
+        red = self._duration(settings.get("all_red_time", 3))
         if self.maximum < self.minimum or self.maximum <= 0:
             raise ValueError("max_green must be positive and >= min_green")
         self.tls_ids = tuple(connection.trafficlight.getIDList())

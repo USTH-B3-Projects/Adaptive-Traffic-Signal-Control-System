@@ -1,3 +1,6 @@
+from DRL.core.scenario_loader import load_settings
+
+
 def get_group_queues(state):
     lanes = state["tls"]["J"]["lanes"]
     ns_lanes = ["N_in_0", "N_in_1", "S_in_0", "S_in_1"]
@@ -23,13 +26,14 @@ def get_current_group(state):
     else:
         return None
 
-def choose_action(state):
+def choose_action(state, settings=None):
+    settings = load_settings() if settings is None else settings
     tls = state["tls"]["J"]
 
     current_group = get_current_group(state)
-    if current_group is None or tls["green_elapsed"] < 30:
+    if current_group is None or tls["green_elapsed"] < settings["min_green"]:
         return "KEEP"
-    if tls["green_elapsed"] >= 75:
+    if tls["green_elapsed"] >= settings["max_green"]:
         return "SWITCH"
 
     queues = get_group_queues(state)
