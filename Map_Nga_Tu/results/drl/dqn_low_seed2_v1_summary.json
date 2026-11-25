@@ -1,0 +1,62 @@
+{
+  "scenario": "low",
+  "model": "dqn_low_seed2_v1",
+  "seeds": [
+    57,
+    367,
+    1024
+  ],
+  "bridge_settings": {
+    "simulation_step": 0.1,
+    "decision_interval": 5,
+    "min_green": 30,
+    "max_green": 75,
+    "yellow_time": 3,
+    "all_red_time": 0,
+    "gui": false,
+    "max_episode_seconds": null,
+    "sumo_binary": null,
+    "seed": null
+  },
+  "scales": {
+    "q_scale": 20.0,
+    "v_scale": 30.0,
+    "w_scale": 60.0
+  },
+  "clip_rate": {
+    "queue_ns": 0.0,
+    "queue_ew": 0.0,
+    "vehicles_ns": 0.0,
+    "vehicles_ew": 0.0,
+    "wait_ns": 0.0,
+    "wait_ew": 0.0,
+    "speed_ns": 0.0,
+    "speed_ew": 0.0,
+    "phase_is_ns": 0.0,
+    "in_transition": 0.0,
+    "elapsed_green": 0.0
+  },
+  "metrics": {
+    "mean_queue": {
+      "mean": 3.5972222222222228,
+      "sd": 0.06977698159489151
+    },
+    "max_queue": {
+      "mean": 14.0,
+      "sd": 2.0
+    },
+    "mean_total_waiting_time": {
+      "mean": 52.141481481481485,
+      "sd": 2.075580046535951
+    },
+    "max_total_waiting_time": {
+      "mean": 269.8666666666667,
+      "sd": 26.360260494413453
+    }
+  },
+  "suggested_scales_p95": {
+    "q_scale": 6.9999998807907104,
+    "v_scale": 12.000000178813934,
+    "w_scale": 13.956193283200255
+  }
+}

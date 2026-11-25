@@ -1,0 +1,39 @@
+{
+  "scenario": "medium",
+  "model": "dqn_medium_seed0",
+  "seeds": [
+    57,
+    367,
+    1024
+  ],
+  "bridge_settings": {
+    "simulation_step": 0.1,
+    "decision_interval": 5,
+    "min_green": 30,
+    "max_green": 75,
+    "yellow_time": 3,
+    "all_red_time": 0,
+    "gui": false,
+    "max_episode_seconds": null,
+    "sumo_binary": null,
+    "seed": null
+  },
+  "metrics": {
+    "mean_queue": {
+      "mean": 9.631018518518518,
+      "sd": 0.21455673753438595
+    },
+    "max_queue": {
+      "mean": 29.333333333333332,
+      "sd": 2.081665999466133
+    },
+    "mean_total_waiting_time": {
+      "mean": 134.4546296296296,
+      "sd": 4.009497199390943
+    },
+    "max_total_waiting_time": {
+      "mean": 557.3333333333334,
+      "sd": 6.184927916583417
+    }
+  }
+}

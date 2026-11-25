@@ -1,0 +1,60 @@
+{
+  "args": {
+    "scenario": "medium",
+    "seed": 2,
+    "steps": 100000,
+    "train_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "val_seeds": [
+      100,
+      101,
+      102
+    ],
+    "eval_freq": 0,
+    "reward": "avg_wait",
+    "q_scale": null,
+    "v_scale": null,
+    "w_scale": null,
+    "learning_rate": 0.001,
+    "target_update_interval": 500,
+    "eps_final": 0.05,
+    "tag": "v1"
+  },
+  "scales": {
+    "q_scale": 20.0,
+    "v_scale": 30.0,
+    "w_scale": 60.0
+  },
+  "bridge_settings": {
+    "simulation_step": 0.1,
+    "decision_interval": 5,
+    "min_green": 30,
+    "max_green": 75,
+    "yellow_time": 3,
+    "all_red_time": 0,
+    "gui": false,
+    "max_episode_seconds": null,
+    "sumo_binary": null,
+    "seed": null
+  },
+  "python": "3.12.16 (main, Oct 25 2026, 18:24:37) [Clang 21.0.0 (clang-2100.3.34.2)]",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "versions": {
+    "eclipse-sumo": "1.27.1",
+    "traci": "1.27.1",
+    "stable-baselines3": "2.9.2",
+    "torch": "2.15.0",
+    "gymnasium": "1.4.0",
+    "numpy": "2.5.4"
+  }
+}
