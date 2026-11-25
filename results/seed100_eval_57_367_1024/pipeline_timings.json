@@ -1,0 +1,9 @@
+{
+  "evaluation_wall_seconds": 1251.2844492000295,
+  "methods_concurrent": true,
+  "method_episode_wall_seconds": {
+    "fixed_time": 1245.5943946000189,
+    "rule_based": 791.6682506998768,
+    "drl_ppo": 790.2445799999405
+  }
+}

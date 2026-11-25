@@ -1,0 +1,2 @@
+method,scenario,seed,queue_length,waiting_time,average_speed,arrived_count,vehicles_in_network,samples,end_time
+fixed_time,medium,367,12.955555555555556,242.47416666666666,5.995918521799874,2914,52.94861111111111,720,3600.0

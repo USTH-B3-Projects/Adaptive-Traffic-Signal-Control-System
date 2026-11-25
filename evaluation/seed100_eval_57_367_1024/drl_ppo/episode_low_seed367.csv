@@ -1,0 +1,2 @@
+method,scenario,seed,queue_length,waiting_time,average_speed,arrived_count,vehicles_in_network,samples,end_time
+drl_ppo,low,367,2.651388888888889,24.945138888888888,7.9927334103192,1204,17.668055555555554,720,3600.0

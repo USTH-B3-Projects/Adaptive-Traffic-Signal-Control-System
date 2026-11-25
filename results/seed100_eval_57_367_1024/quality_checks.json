@@ -1,0 +1,54 @@
+{
+  "status": "passed",
+  "episodes": 36,
+  "samples": 25920,
+  "episode_samples": 720,
+  "numeric_checks": 300,
+  "summary_rows": 12,
+  "improvement_rows": 20,
+  "runtime_rows": 36,
+  "ddof": 1,
+  "markdown_tables": 9,
+  "protected_files_unchanged": 333,
+  "model_sha256_unchanged": true,
+  "figures": [
+    {
+      "file": "01_summary_comparison.png",
+      "bytes": 730571,
+      "pixels": [
+        6900,
+        5400
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ]
+    },
+    {
+      "file": "02_per_seed_high_imbalance.png",
+      "bytes": 417233,
+      "pixels": [
+        4800,
+        5400
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ]
+    },
+    {
+      "file": "03_timeseries_all_scenarios.png",
+      "bytes": 5852717,
+      "pixels": [
+        7200,
+        5700
+      ],
+      "dpi": [
+        299.9994,
+        299.9994
+      ]
+    }
+  ],
+  "training_executed": false,
+  "concurrent_methods": true
+}

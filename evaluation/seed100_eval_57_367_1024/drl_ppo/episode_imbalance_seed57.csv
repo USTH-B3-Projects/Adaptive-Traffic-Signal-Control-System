@@ -1,0 +1,2 @@
+method,scenario,seed,queue_length,waiting_time,average_speed,arrived_count,vehicles_in_network,samples,end_time
+drl_ppo,imbalance,57,19.8375,307.3073611111111,5.203657152178815,4060,84.62222222222222,720,3600.0

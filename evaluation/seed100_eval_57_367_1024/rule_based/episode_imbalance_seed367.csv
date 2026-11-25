@@ -1,0 +1,2 @@
+method,scenario,seed,queue_length,waiting_time,average_speed,arrived_count,vehicles_in_network,samples,end_time
+rule_based,imbalance,367,25.82638888888889,343.30833333333334,4.290100038228175,4109,96.05972222222222,720,3600.0

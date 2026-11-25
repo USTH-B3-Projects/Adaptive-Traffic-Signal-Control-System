@@ -1,0 +1,54 @@
+{
+  "settings": {
+    "simulation_step": 0.1,
+    "decision_interval": 5,
+    "min_green": 15,
+    "max_green": 75,
+    "yellow_time": 3,
+    "all_red_time": 3,
+    "gui": false,
+    "max_episode_seconds": null,
+    "sumo_binary": null,
+    "seed": null
+  },
+  "model": "models\\seed100\\best_model\\best_model.zip",
+  "model_sha256": "dbbc9ba953003f6590e26f14aa1f88139ebf68a945ef33930d7e9db748340bb8",
+  "seeds": [
+    57,
+    367,
+    1024
+  ],
+  "scenarios": [
+    "low",
+    "medium",
+    "high",
+    "imbalance"
+  ],
+  "observation_shape": [
+    12
+  ],
+  "observation_bounds": [
+    0,
+    1
+  ],
+  "deterministic": true,
+  "training": false,
+  "gpu": "Quadro RTX 3000",
+  "sumo_home": "C:\\Program Files (x86)\\SUMO\\",
+  "sumo_binary": "C:\\Program Files (x86)\\SUMO\\bin\\sumo.EXE",
+  "sumo_version": "Eclipse SUMO sumo 1.28.0\n Build features: Windows-10.0.17763 AMD64 MSVC 19.51.36256.0 Release FMI Proj GUI FMT Intl SWIG Parquet Eigen\n Copyright (C) 2001-2026 German Aerospace Center (DLR) and others; https://sumo.dlr.de\n\nEclipse SUMO sumo 1.28.0 is part of SUMO.\nThis program and the accompanying materials\nare made available under the terms of the Eclipse Public License v2.0\nwhich accompanies this distribution, and is available at\nhttp://www.eclipse.org/legal/epl-v20.html\nThis program may also be made available under the following Secondary\nLicenses when the conditions for such availability set forth in the Eclipse\nPublic License 2.0 are satisfied: GNU General Public License, version 2\nor later which is available at\nhttps://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html\nSPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later\n",
+  "actual_training_seed_overlap": {
+    "57": 0,
+    "367": 0,
+    "1024": 0
+  },
+  "versions": {
+    "torch": "2.5.1+cu121",
+    "stable-baselines3": "2.9.2",
+    "gymnasium": "1.4.0",
+    "numpy": "2.2.6",
+    "PyYAML": "6.0.3",
+    "matplotlib": "3.10.9"
+  },
+  "runtime_protocol": "Three concurrent method processes; episodes sequential within each method. Episode wall time excludes model load and includes SUMO startup/close and inference."
+}
