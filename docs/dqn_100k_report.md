@@ -415,7 +415,7 @@ Nhận xét v2 (High):
 
 Đánh giá bản cuối (`_model`) của v1 seed 0, v1 seed 1, v2a và v2b ở High cho cùng một kết quả, và kết quả đó trùng khớp từng chữ số với chính sách cố định luôn SWITCH (kể cả từng seed test, ví dụ seed 1024: 43,46 / 85,00 / 711,63 / 2390,80):
 
-| Mô hình (High, bản cuối) | mean_queue | max_queue | mean_wait | max_wait |
+| Mô hình (High, bản cuối) | mean_queue | max_queue | mean_total_waiting_time | max_total_waiting_time |
 |---|---|---|---|---|
 | v1 seed 0 | 41,16 ± 3,10 | 95,67 ± 9,71 | 681,01 ± 58,16 | 2631,10 ± 268,37 |
 | v1 seed 1 | 41,16 ± 3,10 | 95,67 ± 9,71 | 681,01 ± 58,16 | 2631,10 ± 268,37 |

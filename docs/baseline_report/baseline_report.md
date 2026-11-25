@@ -190,7 +190,7 @@ In v1, the scale diagnostic showed that the observation saturates in the heavy s
 
 After the change, clipping fell to 0% to 5% of steps. Neither the mean nor the worst-case metrics improved over v1. Both v2 variants are level with rule-based and always SWITCH on the mean metrics (differences within the standard deviations) and worse than rule-based on `max_total_waiting_time` (−5.3% and −13.5%). The two v2 runs differ from each other by less than their standard deviations, so the effect of the reward cannot be separated from noise with one seed. The final (last-step) models of both v2 runs collapsed to the always-SWITCH policy (Section 3.4).
 
-In Imbalance, v2a with larger scales (queue 70, vehicles 110, waiting 30) gave mean queue 35.79 ± 4.85 and mean waiting time 656.72 ± 70.78 (best checkpoint), compared with 34.97 and 606.56 for the v1 model of the same DRL seed: no improvement.
+In Imbalance, v2a with larger scales (queue 70, vehicles 110, waiting 30) gave mean queue 35.79 ± 4.85 and mean total waiting time 656.72 ± 70.78 (best checkpoint), compared with 34.97 and 606.56 for the v1 model of the same DRL seed: no improvement.
 
 ## 5. Discussion
 

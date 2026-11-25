@@ -57,7 +57,7 @@ for i,(vals,lab) in enumerate([(q,"mean queue (vehicles)"),(w,"max total waiting
 fig.tight_layout(); fig.savefig("figures/fig3_high_v2.pdf"); fig.savefig("figures/fig3_high_v2.png",dpi=200); plt.close(fig)
 # Fig 4 improvement vs RB
 fig,ax=plt.subplots(figsize=(7,3.4)); w_=0.2
-mnames=["mean queue","max queue","mean waiting time","max waiting time"]; mc=[BLUE,ORANGE,AQUA,YELLOW]; mh=["","//","..","xx"]
+mnames=["mean queue","max queue","mean total waiting time","max total waiting time"]; mc=[BLUE,ORANGE,AQUA,YELLOW]; mh=["","//","..","xx"]
 imp=np.zeros((4,4))
 for j,s in enumerate(SC):
     dm,_=dq(s)
