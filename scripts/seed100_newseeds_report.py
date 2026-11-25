@@ -230,3 +230,80 @@ def generate(E,R,report,metadata,protected,total_runtime):
  assert all(sha(root/p)==h for p,h in protected.items())
  print(json.dumps(quality,indent=2),flush=True)
 
+def render_presentation_plots(E,R):
+ """Restyle existing CSV values only; never evaluates or rewrites data."""
+ summary={(r['method'],r['scenario']):r for r in read(R/'summary_final.csv')}
+ eps={(r['method'],r['scenario'],int(r['seed'])):r for r in read(E/'episodes.csv')}
+ raw={}
+ for row in read(E/'metrics.csv'):
+  raw.setdefault((row['method'],row['scenario'],int(row['seed'])),[]).append(row)
+ seeds=(57,367,1024)
+ assert len(eps)==36 and len(raw)==36
+ plt.rcParams.update({'font.family':'DejaVu Sans','font.size':12,'axes.titlesize':16,'axes.labelsize':13,'legend.fontsize':12})
+ def save(fig,name):
+  import tempfile,os
+  fd,tmp=tempfile.mkstemp(prefix='._style_',suffix='.png',dir=R/'plots');os.close(fd)
+  try:
+   fig.savefig(tmp,dpi=300,facecolor='white')
+   with Image.open(tmp) as im:
+    assert all(abs(x-300)<1 for x in im.info['dpi']);im.verify()
+   os.replace(tmp,R/'plots'/name)
+  finally:
+   plt.close(fig)
+   if os.path.exists(tmp):os.remove(tmp)
+ fig,axs=plt.subplots(5,4,figsize=(25,19),layout='constrained')
+ for j,s in enumerate(SC):
+  for i,k in enumerate(MT):
+   ax=axs[i,j]
+   for x,m in enumerate(MS):
+    row=summary[m,s]
+    ax.bar(x,float(row[k+'_mean']),yerr=float(row[k+'_std']),color=COLORS[m],width=.62,
+           capsize=5,error_kw={'elinewidth':1.7,'capthick':1.7,'ecolor':'#20252b'})
+   ax.set_xticks(range(3),['Fixed\nTime','Rule\nBased','PPO\nbest'],fontsize=12)
+   ax.grid(axis='y',alpha=.17)
+   if i==0:ax.set_title(s.title(),fontsize=18)
+   if j==0:ax.set_ylabel(LABEL[k]+'\n'+('Higher is better' if k in ('average_speed','arrived_count') else 'Lower is better'),fontsize=13)
+ fig.suptitle('PPO best seed 100: evaluation seeds 57, 367, 1024\n'
+              'Mean ± sample Std (ddof=1); physical traffic metrics remain unnormalized',fontsize=20)
+ save(fig,'01_summary_comparison.png')
+ fig,axs=plt.subplots(5,2,figsize=(18,20),layout='constrained')
+ for j,s in enumerate(('high','imbalance')):
+  for i,k in enumerate(MT):
+   ax=axs[i,j];x=np.arange(3)*1.5
+   for z,m in enumerate(MS):
+    ax.bar(x+(z-1)*.29,[float(eps[m,s,seed][k]) for seed in seeds],.27,color=COLORS[m])
+   ax.set_xticks(x,[f'Seed {seed}' for seed in seeds],fontsize=14)
+   ax.set_ylabel(LABEL[k],fontsize=14);ax.tick_params(axis='y',labelsize=12)
+   ax.grid(axis='y',alpha=.17)
+   if i==0:ax.set_title(s.title(),fontsize=19)
+ fig.legend([plt.Rectangle((0,0),1,1,color=COLORS[m]) for m in MS],
+            [NAMES[m] for m in MS],loc='outside lower center',ncol=3,fontsize=15)
+ fig.suptitle('High and Imbalance: individual traffic seeds\n'
+              'Original episode values; PPO best checkpoint from training seed 100',fontsize=20)
+ save(fig,'02_per_seed_high_imbalance.png')
+ fig,axs=plt.subplots(5,4,figsize=(25,20),layout='constrained')
+ for j,s in enumerate(SC):
+  for i,k in enumerate(MT):
+   ax=axs[i,j]
+   for m in MS:
+    cohorts=[raw[m,s,seed] for seed in seeds]
+    assert all(len(v)==720 and all(float(row['simulation_time'])==5*(z+1) for z,row in enumerate(v)) for v in cohorts)
+    values=np.array([[float(row[k]) for row in v] for v in cohorts])
+    if k=='arrived_count':
+     y=np.cumsum(values,axis=1).mean(axis=0)
+     ax.plot(np.arange(5,3601,5),y,color=COLORS[m],lw=1.8)
+    else:
+     y=values.mean(axis=0)
+     ax.plot(np.arange(5,3601,5),y,color=COLORS[m],alpha=.22,lw=.7)
+     ax.plot(np.arange(60,3601,5),np.convolve(y,np.ones(12)/12,mode='valid'),color=COLORS[m],lw=1.8)
+   ax.set_xlim(0,3600);ax.set_xticks([0,900,1800,2700,3600]);ax.tick_params(labelsize=12);ax.grid(alpha=.17)
+   if i==0:ax.set_title(s.title(),fontsize=18)
+   if j==0:ax.set_ylabel('Cumulative arrivals' if k=='arrived_count' else LABEL[k],fontsize=14)
+   if i==4:ax.set_xlabel('Simulation time (s)',fontsize=14)
+ fig.legend([plt.Line2D([],[],color=COLORS[m],lw=2) for m in MS],
+            [NAMES[m] for m in MS],loc='outside lower center',ncol=3,fontsize=15)
+ fig.suptitle('Traffic-seed means: 57, 367, 1024\n'
+              'Snapshots: faint raw 5 s + bold trailing 60 s mean; arrivals: unchanged cumulative totals',fontsize=20)
+ save(fig,'03_timeseries_all_scenarios.png')
+
+

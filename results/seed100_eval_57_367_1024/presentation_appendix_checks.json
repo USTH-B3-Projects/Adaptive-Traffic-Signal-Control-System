@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "numeric_source_checks": 340,
+  "protected_files_unchanged": 285,
+  "reports": {
+    "drl_seed100_comprehensive_report_vi.md": {
+      "original_bytes": 53444,
+      "original_sha256": "8894908f42a87eff85d7c6247a90e0b2bcf39395478092b59bf00ad4cdd68404",
+      "append_only": true
+    },
+    "drl_seed100_comprehensive_report_en.md": {
+      "original_bytes": 47728,
+      "original_sha256": "2fa3a5abee6d664fbf13626ac8e98a7ed586db40c43e0277c9ca136e6af1f1ec",
+      "append_only": true
+    },
+    "drl_seed100_v2_report.md": {
+      "original_bytes": 6259,
+      "original_sha256": "fdd0c32ee7f2fa258f3cac501f85b47fdb685c4a68991f70a46f70c111dab2ee",
+      "append_only": true
+    },
+    "drl_seed100_full_analysis_report.md": {
+      "original_bytes": 32641,
+      "original_sha256": "ada07fda2f9da7d7e5d6a659f5c41ae41a67ef41b384cf49991e15cbe9b70525",
+      "append_only": true
+    }
+  },
+  "figures": [
+    {
+      "file": "01_summary_comparison.png",
+      "bytes": 789083,
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "2464e4e49c4d7a52741e21d046b6006f5e129bab08d0fb1650f103836201dbd0"
+    },
+    {
+      "file": "02_per_seed_high_imbalance.png",
+      "bytes": 553113,
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "bd09ea09eb374fe0f7492acb902c39d1f2afcc03bc1e71ca76e00f4d962aa82e"
+    },
+    {
+      "file": "03_timeseries_all_scenarios.png",
+      "bytes": 7117022,
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "sha256": "f4b12b1c7c8774995cce9caa42d9950b3bf804f91c98a5de713b89894ce93c77"
+    }
+  ],
+  "git_diff_numstat": "171\t0\tresults/comparison_result/drl_seed100_comprehensive_report_en.md\n171\t0\tresults/comparison_result/drl_seed100_comprehensive_report_vi.md\n171\t0\tresults/comparison_result/drl_seed100_full_analysis_report.md\n171\t0\tresults/comparison_result/drl_seed100_v2_report.md\n",
+  "training_or_evaluation_executed": false
+}
