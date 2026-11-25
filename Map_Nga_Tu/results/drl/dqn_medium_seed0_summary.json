@@ -1,4 +1,5 @@
 {
+  "map": "simple_intersection",
   "scenario": "medium",
   "model": "dqn_medium_seed0",
   "seeds": [
@@ -18,22 +19,45 @@
     "sumo_binary": null,
     "seed": null
   },
+  "scales": {
+    "q_scale": 20.0,
+    "v_scale": 30.0,
+    "w_scale": 60.0
+  },
+  "clip_rate": {
+    "queue_ns": 0.0102,
+    "queue_ew": 0.014366666666666666,
+    "vehicles_ns": 0.025933333333333333,
+    "vehicles_ew": 0.030533333333333332,
+    "wait_ns": 0.0,
+    "wait_ew": 0.0,
+    "speed_ns": 0.0,
+    "speed_ew": 0.0,
+    "phase_is_ns": 0.0,
+    "in_transition": 0.0,
+    "elapsed_green": 0.0
+  },
   "metrics": {
     "mean_queue": {
-      "mean": 9.631018518518518,
-      "sd": 0.21455673753438595
+      "mean": 9.66388888888889,
+      "sd": 0.1322875655532294
     },
     "max_queue": {
-      "mean": 29.333333333333332,
-      "sd": 2.081665999466133
+      "mean": 29.0,
+      "sd": 2.6457513110645907
     },
     "mean_total_waiting_time": {
-      "mean": 134.4546296296296,
-      "sd": 4.009497199390943
+      "mean": 135.83652777777777,
+      "sd": 1.3105905496128707
     },
     "max_total_waiting_time": {
-      "mean": 557.3333333333334,
-      "sd": 6.184927916583417
+      "mean": 551.6,
+      "sd": 16.086951233841674
     }
+  },
+  "suggested_scales_p95": {
+    "q_scale": 17.000000476837158,
+    "v_scale": 28.999999165534973,
+    "w_scale": 12.077771857380853
   }
 }

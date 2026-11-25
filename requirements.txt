@@ -1,7 +1,7 @@
-eclipse-sumo==1.27.1
-sumo-data==1.27.1
-traci==1.27.1
-sumolib==1.27.1
+eclipse-sumo==1.28.0
+sumo-data==1.28.0
+traci==1.28.0
+sumolib==1.28.0
 pyyaml>=6.0,<7
 numpy==2.5.4
 matplotlib==3.11.2

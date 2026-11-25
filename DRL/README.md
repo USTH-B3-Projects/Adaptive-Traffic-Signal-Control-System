@@ -41,15 +41,21 @@ python ../DRL/train_dqn.py --scenario high --seed 0 --q-scale 60 --v-scale 90 --
 python ../DRL/evaluate.py --scenario high --model logs/dqn_high_seed0_v2a_best_model
 python ../DRL/evaluate.py --scenario high --constant switch
 ```
-Result folders: `results/drl/` (DQN models, per test seed and summary), `results/constant/` (constant policies always SWITCH / always KEEP). `results/diag/` (diagnostics: clipping rates, switch rates).
+Result folders: `results/drl/` (DQN models, per test seed and summary; includes clipping rates and requested/executed switch rates), `results/constant/` (constant policies always SWITCH / always KEEP).
 Each run saves `logs/<name>_config.json` (arguments, scales, package versions). Results and the full
-write-ups are in `docs/baseline_report/` and `docs/ket_qua_dqn_100k.md`.
+write-ups are in `docs/baseline_report/` and `docs/dqn_100k_report.md`.
 
 ## Environment used for the results
-Python 3.12.16, macOS (arm64), eclipse-sumo 1.27.1, traci 1.27.1, stable-baselines3 2.9.2, torch 2.15.0,
-gymnasium 1.4.0, numpy 2.5.4, matplotlib 3.11.2 (all but matplotlib read from `logs/dqn_high_seed0_v2a_config.json`). Other versions may give
+All evaluation results (`results/`, `docs/`) were produced with **SUMO 1.28.0** (`eclipse-sumo`, `sumo-data`, `traci`, `sumolib` 1.28.0).
+The DQN models were trained earlier with SUMO 1.27.1 (see `logs/<name>_config.json`) and were not retrained.
+Python 3.12.16, macOS (arm64), stable-baselines3 2.9.2, torch 2.15.0, gymnasium 1.4.0, numpy 2.5.4, matplotlib 3.11.2
+(training versions read from `logs/dqn_high_seed0_v2a_config.json`; matplotlib is not recorded there). Other versions may give
 different numbers. Suggested pins for `requirements.txt`:
 ```
+eclipse-sumo==1.28.0
+sumo-data==1.28.0
+traci==1.28.0
+sumolib==1.28.0
 stable-baselines3==2.9.2
 torch==2.15.0
 gymnasium==1.4.0
@@ -76,11 +82,11 @@ Its results are not part of this stage. `evaluate.py` refuses a model whose trai
 **What the results show (see `docs/baseline_report/`).**
 - DQN is clearly better than fixed-time in all four scenarios.
 - In Low, Medium and High, DQN is about equal to the rule-based controller and to the constant policy
-  "always SWITCH". In High the final models are exactly "always SWITCH".
-- Only in Imbalance does DQN beat the rule-based controller (about 11.8% on mean queue over 5 DRL seeds),
-  and the gain varies by seed (2.5% to 17.8%). Quote it as an average over seeds, not from one seed.
+  "always SWITCH". In High the final models of DRL seeds 0 and 1 and of both v2 runs are exactly "always SWITCH".
+- Only in Imbalance does DQN beat the rule-based controller (about 8.3% on mean queue over 5 DRL seeds),
+  and the gain varies by seed (1.2% to 11.4%). Quote it as an average over seeds, not from one seed.
 - Observation clipping (saturation) exists in High and Imbalance with the v1 scales. The v2 scales and reward
-  removed it but did not improve the mean metrics.
+  removed it but did not improve the mean or the worst-case metrics.
 
 **How to read the actions.** SWITCH requested before the minimum green (30 s) is ignored, so the share of
 requested SWITCH can be much higher than the share of executed switches (`evaluate.py` prints both). Judge a

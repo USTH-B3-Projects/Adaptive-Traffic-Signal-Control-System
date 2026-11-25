@@ -1,4 +1,5 @@
 {
+  "map": "simple_intersection",
   "scenario": "imbalance",
   "model": "constant_switch_imbalance",
   "seeds": [
@@ -24,9 +25,9 @@
     "w_scale": 60.0
   },
   "clip_rate": {
-    "queue_ns": 0.8513666666666667,
+    "queue_ns": 0.8652666666666665,
     "queue_ew": 0.0,
-    "vehicles_ns": 0.9874999999999999,
+    "vehicles_ns": 0.9889,
     "vehicles_ew": 0.0,
     "wait_ns": 0.0,
     "wait_ew": 0.0,
@@ -38,25 +39,25 @@
   },
   "metrics": {
     "mean_queue": {
-      "mean": 74.40555555555555,
-      "sd": 7.991434578370165
+      "mean": 77.13055555555556,
+      "sd": 6.820963708340179
     },
     "max_queue": {
-      "mean": 233.0,
-      "sd": 23.515952032609693
+      "mean": 239.0,
+      "sd": 21.656407827707714
     },
     "mean_total_waiting_time": {
-      "mean": 1192.052638888889,
-      "sd": 118.99714343292776
+      "mean": 1302.1218055555555,
+      "sd": 101.6022620646564
     },
     "max_total_waiting_time": {
-      "mean": 6239.966666666667,
-      "sd": 431.3223195399615
+      "mean": 7040.533333333334,
+      "sd": 298.1653623969983
     }
   },
   "suggested_scales_p95": {
-    "q_scale": 172.0500068664548,
-    "v_scale": 262.00000762939453,
-    "w_scale": 19.89864930510521
+    "q_scale": 178.99999618530273,
+    "v_scale": 253.99998664855957,
+    "w_scale": 20.74429044127463
   }
 }
