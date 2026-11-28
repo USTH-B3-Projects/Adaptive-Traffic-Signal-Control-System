@@ -13,9 +13,6 @@
     <collision.action value="warn" />
     <time-to-teleport value="-1" />
   </processing>
-  <random_number>
-    <seed value="42" />
-  </random_number>
   <gui_only>
     <gui-settings-file value="../../config/osm.view.xml" />
   </gui_only>

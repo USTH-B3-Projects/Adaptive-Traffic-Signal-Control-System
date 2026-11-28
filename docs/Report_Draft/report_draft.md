@@ -16,13 +16,7 @@ The project aimed to achieve the following objectives:
 - Evaluate the ability to expand to complex maps.
 - Evaluate direct LLM + DRL from baseline to complex maps.
 
-### 1.3. Research Questions
-This research aimed to address the following research questions:
-- Which adaptive controller performs best in each scenario and road network? Is its performance consistent across the three networks?
-- Does that best-performing adaptive controller outperform the fixed-time baseline? How does it reduce queue length and waiting time?
-- How do direct LLM-based control and LLM-DRL integration compare with standalone DRL in terms of evaluation metrics?
-
-### 1.4. Expected outcomes
+### 1.3. Expected outcomes
 - A SUMO simulation environment with three maps across four scenarios.
 - Logged data, traffic states, and actions.
 - An adaptive traffic control prototype integrated with the SUMO simulation for complex real-world urban traffic scenarios.
@@ -36,17 +30,66 @@ The project’s main goal is to build and evaluate the traffic signal control sy
 *summarize the research of conventional controller, DRL, LLM; then come up with this project's approach*
 
 ### 2.2. Simulation environment
-The traffic networks were simulated in the SUMO environment, using OpenStreetMap data for their network representation of real-world intersections. They were built with lanes, directions, and a signal controller. The vehicles were introduced at different demand levels and were configured to reflect observed real-world traffic conditions, in that they did not always form straight, orderly queues. The simulation provided an environment for testing different traffic scenarios and evaluating the effects of control decisions. 
+The traffic networks were simulated in the SUMO environment, using OpenStreetMap data for their network representation of real-world intersections. They were built with lanes, directions, and a signal controller. The vehicles were introduced at different demand levels and were configured to reflect observed real-world traffic conditions, in that they did not always form straight, orderly queues. The simulation provided an environment for testing different traffic scenarios and evaluating the effects of control decisions. The three road networks were simulated in SUMO as follow:
+
+*insert 3-map figures, including the TLS, dont need vehicles here, just road network only*
+
+[caption] Road networks in SUMO simulation: (a) Simple four-way intersection, (b) O Cho Dua six-way intersection, (c) Thang Long Avenue
 
 TraCI connected the control program to SUMO, allowing the program to retrieve traffic data and signal states and send control commands to the simulation. The Python program collected and processed data through TraCI, coordinated the simulation runs, and invoked the selected controller. It was also used to execute actions, maintain logs, and perform comparative evaluations. 
 
 Before each simulation run, the required configuration inputs included the traffic network (the road network structure), the traffic demand and its movements, signal phases and configuration, and the run configuration, including the controller, scenario, seed, and simulation duration.
 
-### 2.3. Overall Framework
+### 2.3. Problem Definition
+#### 2.3.1. Terminology
+In this project, the basis for defining traffic state, actions, and control problems were expressed as following:
+
+| Terminology | Definition | Example in this project |
+|---|---|---|
+| Intersection | An area where two or more roads meet or cross each other, allowing vehicles to move between approaches | Simple four-way intersection <br> O Cho Dua six-way intersection |
+| Approach | A road section that leads into the intersection from 1 direction and may include one or more incoming lanes | The Northern (N) approach of four-way intersection |
+| Incoming - Outgoing lane | An incoming lane leads vehicles towards an intersection, while an outgoing lane carries vehicles away from it. <br> The incoming lanes were selected to observe traffic conditions. | `N_in_0`: an incoming lane from the Northern (N) approach <br> `S_out_0`: an outgoing lane on the Southern (S) side of the intersection |
+| Traffic movement | Movement allowed from an incoming lane to an outgoing lane through the intersection | `N_in_0` → `S_out_0` represents a straight-through movement |
+| Traffic Light System (TLS) | A signal system that controls a set of movements | TLS with ID $J$ controls the simple four-way intersection |
+
+Let $\mathcal{J}$ denote the set of controlled TLS. For each TLS $j \in \mathcal{J}$, let $\mathcal L_j^{\mathrm{in}}$ and $\mathcal L_j^{\mathrm{out}}$ denote the sets of incoming and outgoing lanes associated with its controlled movements. A traffic movement is represented by an ordered pair: $$m = (\ell_{in}, \ell_{out}) \in \mathcal{M}_j$$ where $\ell_{in} \in \mathcal L_j^{\mathrm{in}}$, $\ell_{out} \in \mathcal L_j^{\mathrm{out}}$, and $\mathcal{M}_j$ is the set of permitted movements controlled by TLS $j$.
+
+The following terms describe the signal phase and their organization. The corresponding examples refer to the simple four-way intersection:
+
+| Terminology | Definition | Example in this project |
+|---|---|---|
+| Signal phase | A simultaneous signal configuration for movements controlled by a TLS | Phase 1 serves the NS group while the EW group remains red |
+| Green group | A group of traffic movements served together during a green interval, which may span multiple consecutive signal phases | The NS group is served during phases 0 - 1, while the EW group is served during phases 4 - 5 |
+| Yellow phase | A transition phase indicating the end of green for the currently served movements, before their signals turn red | Phases 2 and 6 provide 3-second yellow intervals after the NS and EW green intervals, respectively |
+| All-red clearance | A transition interval during which all controlled movements receive red signals, allowing vehicles already in the intersection to clear before the next green group is served | Phases 3 and 7 provide 3-second all-red clearance intervals |
+| Signal cycle | A complete sequence of signal phases, from the start of a particular phase until that phase starts again | The FT program repeats phases 0 - 7, with a total cycle duration of 114 seconds |
+
+A green group does not necessarily correspond to a single signal phase (e.g. phases 0 and 1 both serve the nS group, although they are represented as separate phases in SUMO)
+
+The all-red clearance is different from the total red time of an individual movement, which includes the time during which other groups are served.
+
+#### 2.3.2. Input Metrics and State Representation
+
+### 2.4. Overall Framework
 *a workflow of controller*
 
-### 2.4. Overview of Control Approaches
-*introduce FT, RB, DRL, direct LLM and LLM-DRL, role and suggested method*
+### 2.5. Overview of Control Approaches
+
+The project aims to compare different controllers’ performance across scenarios on 3 road networks with different levels of complexity. Therefore, we decided to investigate control approaches ranging from the fixed light calendar (Fixed-time) and manual rule design (Rule-based) to reinforcement learning methods, with the integration of LLM-based approaches for direct decision-making or expert feedback to DRL. The controller performance is evaluated and compared using the same queue length and total waiting time metrics.
+
+The table below summarizes the main ideas and roles of the control approaches considered in this research.
+
+[caption] Different control approaches’ main ideas and roles.
+
+| Method | Main idea | Role |
+|---|---|---|
+| Fixed-time (FT) | Control signal using a predefined phase schedule and fixed phase duration | Provide a baseline to evaluate the benefits of adaptive control |
+| Rule-based (RB) | Adjust signals based on traffic status conditions and manually designed rules | Provide an adaptive baseline to assess whether simple rules improve performance compared to FT |
+| Deep Reinforcement Learning (DRL) | Learn a control policy through interaction with the simulation environment and reward signals | Evaluate the ability to learn how to control from experience |
+| Direct LLM | Use traffic status information as input to an LLM to directly propose control actions | Investigate the decision-making ability of an LLM in traffic signal control problem |
+| LLM - DRL | Combine DRL with LLM-generated feedback role to support the learning process | Investigate whether LLM feedback improves performance compared to independent DRL |
+
+These approaches are compared to identify the most suitable controller for each traffic scenario and road network; therefore, it is not definitely concluded that DRL or LLM-DRL is the best controller; this must be tested and runned via experiments. Their control mechanisms and implementation details are presented in Section 3.
 
 ## 3. Methodology
 ### 3.1. Traffic State and Action Retrieval
@@ -59,7 +102,7 @@ The fixed-time controller utilized a static signal program that was loaded in SU
 
 [caption] Fixed-time signal phases at the simple four-way intersection
 | Phase index | Signal stage | Duration (s) |
-|---|---|---:|
+|---|---|---|
 | 0 | NS initial green | 3 |
 | 1 | NS green | 48 |
 | 2 | NS yellow | 3 |
@@ -105,8 +148,53 @@ The same principle was extended to complex intersections (O Cho Dua and Thang Lo
 #### 4.1.2. Training and Evaluation Protocol
 
 ### 4.2. Evaluation Metrics and Log Processing
+
 ### 4.3. Baseline Comparison
 #### 4.3.1. Simple Four-way Intersection
+The performance of FT, RB, and DQN was compared at the simple four-way intersection underr four traffic scenarios. The results for the four evaluation metrics with lower values indicating better performance are displayed below:
+
+[caption] Baseline results of Simple Four-way Intersection in different scenarios
+
+(a) Low Traffic
+| Controller | Mean queue (vehicles) | Max queue (vehicles) | Mean total waiting time (s) | Max total waiting time (s) |
+|---|---|---|---|---|
+| FT | 4.96 ± 0.04 | 18.00 ± 1.00 | 97.88 ± 1.07 | 567.63 ± 24.16 |
+| RB | 3.62 ± 0.11 | 13.00 ± 1.00 | 51.50 ± 1.62 | 281.50 ± 49.75 |
+| DQN v1 | 3.52 ± 0.16 | 13.78 ± 0.69 | 50.38 ± 2.89 | 276.58 ± 5.68 |
+
+(b) Medium Traffic
+| Controller | Mean queue (vehicles) | Max queue (vehicles) | Mean total waiting time (s) | Max total waiting time (s) |
+|---|---|---|---|---|
+| FT | 12.93 ± 0.39 | 35.67 ± 2.89 | 238.83 ± 8.04 | 1037.87 ± 74.52 |
+| RB | 9.48 ± 0.18 | 28.00 ± 1.00 | 131.17 ± 2.95 | 586.27 ± 63.43 |
+| DQN v1 | 9.58 ± 0.08 | 28.44 ± 0.51 | 134.39 ± 1.88 | 568.40 ± 34.33 |
+
+(c) High Traffic
+| Controller | Mean queue (vehicles) | Max queue (vehicles) | Mean total waiting time (s) | Max total waiting time (s) |
+|---|---|---|---|---|
+| FT | 45.58 ± 2.86 | 93.33 ± 3.21 | 939.12 ± 75.53 | 3160.43 ± 357.15 |
+| RB | 42.07 ± 3.47 | 92.67 ± 2.08 | 693.94 ± 51.83 | 2471.07 ± 219.77 |
+| DQN v1 | 40.66 ± 0.86 | 92.78 ± 5.00 | 667.41 ± 23.55 | 2500.31 ± 226.53 |
+
+(d) Imbalance Traffic
+| Controller | Mean queue (vehicles) | Max queue (vehicles) | Mean total waiting time (s) | Max total waiting time (s) |
+|---|---|---|---|---|
+| FT | 82.78 ± 6.97 | 259.67 ± 34.12 | 1850.26 ± 111.75 | 10014.07 ± 387.89 |
+| RB | 38.56 ± 4.49 | 119.67 ± 3.79 | 692.27 ± 126.49 | 4879.00 ± 1033.06 |
+| DQN v1 | 35.36 ± 1.58 | 110.13 ± 4.99 | 632.72 ± 43.51 | 3722.87 ± 397.30 |
+
+For FT and RB, mean ± SD was calculated across three evaluation traffic seeds. For DQN, results were first averaged across the same three traffic seeds for each trained model, then aggregated across training seeds: three for Low, Medium and High, and five for Imbalance.
+
+Figure .. shows the percentage reduction in each metric achieved by DQN relative to RB across the four scenarios.
+
+![Figure DQN improvement over RB](figures/fig4_vs_rulebased.png)
+
+[caption] Percentage reduction in evaluation metrics for DQN relative to RB. Positive values indicate lower queue or total waiting-time values for DQN, while negative values indicate higher values.
+
+In the low-traffic scenario, DQN reduced mean queue and mean total waiting time compared with RB; however, the maximum queue was approximately $6\%$ higher. Meanwhile, in the medium-traffic scenario, DQN achieved 3 out of 4 metrics that were higher than RB, which only improved max total waiting time. Generally, DQN did not perform better than RB in these 2 scenarios. For the high traffic scenario, mean queue and mean total waiting time both decreased to around 3 and 4 percent, respectively, although the 2 other metrics were still higher than RB. In this scenario, DQN showed better performance compared to RB, but it was not a considerable improvement.
+
+In the imbalance scenario, all four metrics illustrated a remarkable reduction compared to RB, with the largest reduction was in max total waiting time, which constituted approximately $24\%$. Therefore, DQN achieved its most consistent improvements over RB in the Imbalance scenario, while its advantages in the balanced scenarios were limited and varied across metrics.
+
 #### 4.3.2. O Cho Dua Six-way Intersection
 #### 4.3.3. Thang Long Avenue
 

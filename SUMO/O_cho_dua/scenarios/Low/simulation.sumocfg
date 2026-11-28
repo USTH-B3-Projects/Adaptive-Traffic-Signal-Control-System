@@ -6,9 +6,9 @@
     <additional-files value="../../network/osm.poly.xml.gz,output.add.xml" />
   </input>
   <output>
-    <tripinfo-output value="../../output/Low/seed42/tripinfos.xml" />
-    <statistic-output value="../../output/Low/seed42/stats.xml" />
-  </output>
+  <tripinfo-output value="../../output/Low/gui/tripinfos.xml" />
+  <statistic-output value="../../output/Low/gui/stats.xml" />
+</output>
   <processing>
     <tls.actuated.jam-threshold value="30" />
     <lateral-resolution value="0.4" />
@@ -28,7 +28,4 @@
   <gui_only>
     <gui-settings-file value="../../config/osm.view.xml" />
   </gui_only>
-  <random_number>
-    <seed value="42" />
-  </random_number>
 </sumoConfiguration>

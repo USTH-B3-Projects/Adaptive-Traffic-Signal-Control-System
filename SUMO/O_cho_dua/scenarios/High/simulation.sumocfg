@@ -6,8 +6,8 @@
     <additional-files value="../../network/osm.poly.xml.gz,output.add.xml" />
   </input>
   <output>
-    <tripinfo-output value="../../output/High/seed42/tripinfos.xml" />
-    <statistic-output value="../../output/High/seed42/stats.xml" />
+    <tripinfo-output value="../../output/High/gui/tripinfos.xml" />
+    <statistic-output value="../../output/High/gui/stats.xml" />
   </output>
   <processing>
     <tls.actuated.jam-threshold value="30" />
@@ -28,7 +28,4 @@
   <gui_only>
     <gui-settings-file value="../../config/osm.view.xml" />
   </gui_only>
-  <random_number>
-    <seed value="42" />
-  </random_number>
 </sumoConfiguration>
